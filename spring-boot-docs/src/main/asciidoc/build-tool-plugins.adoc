@@ -429,6 +429,13 @@ want the other Boot features but not this one)
  class name via the "run" task (`main` property) and/or the "startScripts"
  (`mainClassName` property) as an alternative to using the "springBoot" configuration.
 
+|`premainClass`
+|The agent class that contains a `premain` method that should be called when the JVM is
+launched. Configures the `Premain-Class` attribute in the repackaged archive's manifest,
+allowing the archive to be used as the `-javaagent` value when the JVM is launched. When
+`premainClass` is specified, the manifest's `Can-Redefine-Classes` and
+`Can-Retransform-Classes` attributes are both configured with a value of `true`.
+
 |`classifier`
 |A file name segment (before the extension) to add to the archive, so that the original is
  preserved in its original location. Defaults to null in which case the archive is

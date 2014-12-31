@@ -109,6 +109,19 @@ public class RepackageMojo extends AbstractDependencyFilterMojo {
 	private String mainClass;
 
 	/**
+	 * The name of the agent class that contains a {@code premain} method that should be
+	 * called when the JVM is launched. Configures the {@code Premain-Class} attribute in
+	 * the repackaged archive's manifest, allowing the archive to be used as the
+	 * {@code -javaagent} value when the JVM is launched. When {@code premainClass} is
+	 * specified, the manifest's {@code Can-Redefine-Classes} and
+	 * {@code Can-Retransform-Classes} attributes are both configured with a value of
+	 * {@code true}.
+	 * @since 1.3.0
+	 */
+	@Parameter
+	private String premainClass;
+
+	/**
 	 * The type of archive (which corresponds to how the dependencies are laid out inside
 	 * it). Possible values are JAR, WAR, ZIP, DIR, NONE. Defaults to a guess based on the
 	 * archive type.
@@ -156,6 +169,7 @@ public class RepackageMojo extends AbstractDependencyFilterMojo {
 			}
 		};
 		repackager.setMainClass(this.mainClass);
+		repackager.setPremainClass(this.premainClass);
 		if (this.layout != null) {
 			getLog().info("Layout: " + this.layout);
 			repackager.setLayout(this.layout.layout());

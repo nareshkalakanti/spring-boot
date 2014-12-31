@@ -48,6 +48,8 @@ public class RepackageTask extends DefaultTask {
 
 	private String mainClass;
 
+	private String premainClass;
+
 	private String classifier;
 
 	private File outputFile;
@@ -66,6 +68,14 @@ public class RepackageTask extends DefaultTask {
 
 	public void setMainClass(String mainClass) {
 		this.mainClass = mainClass;
+	}
+
+	public void setPremainClass(String premainClass) {
+		this.premainClass = premainClass;
+	}
+
+	public String getPremainClass() {
+		return this.premainClass;
 	}
 
 	public String getMainClass() {
@@ -165,6 +175,7 @@ public class RepackageTask extends DefaultTask {
 			}
 			Repackager repackager = new LoggingRepackager(file);
 			setMainClass(repackager);
+			setPremainClass(repackager);
 			if (this.extension.convertLayout() != null) {
 				repackager.setLayout(this.extension.convertLayout());
 			}
@@ -200,6 +211,14 @@ public class RepackageTask extends DefaultTask {
 			}
 			getLogger().info("Setting mainClass: " + mainClass);
 			repackager.setMainClass(mainClass);
+		}
+
+		private void setPremainClass(Repackager repackager) {
+			if (RepackageTask.this.premainClass != null) {
+				getLogger().info(
+						"Setting premainClass: " + RepackageTask.this.premainClass);
+				repackager.setPremainClass(RepackageTask.this.premainClass);
+			}
 		}
 	}
 
