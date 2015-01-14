@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,15 @@
 
 package org.springframework.boot.autoconfigure.condition;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -27,6 +32,8 @@ import java.util.TreeMap;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
@@ -36,6 +43,7 @@ import org.springframework.util.ObjectUtils;
  * @author Greg Turnquist
  * @author Dave Syer
  * @author Phillip Webb
+ * @author Andy Wilkinson
  */
 public class ConditionEvaluationReport {
 
@@ -66,13 +74,55 @@ public class ConditionEvaluationReport {
 		if (!this.outcomes.containsKey(source)) {
 			this.outcomes.put(source, new ConditionAndOutcomes());
 		}
-		this.outcomes.get(source).add(condition, outcome);
+		ConditionAndOutcomes conditionAndOutcomes = this.outcomes.get(source);
+		conditionAndOutcomes.add(condition, outcome);
+
+		if (!conditionAndOutcomes.isFullMatch()) {
+			for (ConditionAndOutcomes descendent : findDescendents(source)) {
+				descendent.add(new AncestorsMatchedCondition(), new ConditionOutcome(
+						false, "Ancestor '" + source + "' did not match"));
+			}
+		}
+	}
+
+	private List<ConditionAndOutcomes> findDescendents(String parent) {
+		List<ConditionAndOutcomes> descendents = new ArrayList<ConditionAndOutcomes>();
+		String prefix = parent + "$";
+		for (Entry<String, ConditionAndOutcomes> entry : this.outcomes.entrySet()) {
+			if (entry.getKey().startsWith(prefix)) {
+				descendents.add(entry.getValue());
+			}
+		}
+		return descendents;
 	}
 
 	/**
 	 * Returns condition outcomes from this report, grouped by the source.
 	 */
 	public Map<String, ConditionAndOutcomes> getConditionAndOutcomesBySource() {
+		Set<String> negativeMatchSources = new HashSet<String>();
+
+		for (Entry<String, ConditionAndOutcomes> entry : this.outcomes.entrySet()) {
+			if (!entry.getValue().isFullMatch()) {
+				negativeMatchSources.add(entry.getKey() + "$");
+			}
+		}
+
+		Map<String, ConditionAndOutcomes> filteredOutcomes = new HashMap<String, ConditionAndOutcomes>();
+
+		for (Entry<String, ConditionAndOutcomes> entry : this.outcomes.entrySet()) {
+			boolean include = true;
+			for (String negativeMatchSource : negativeMatchSources) {
+				if (entry.getKey().startsWith(negativeMatchSource)) {
+					include = false;
+					break;
+				}
+			}
+			if (include) {
+				filteredOutcomes.put(entry.getKey(), entry.getValue());
+			}
+		}
+
 		return Collections.unmodifiableMap(this.outcomes);
 	}
 
@@ -183,6 +233,14 @@ public class ConditionEvaluationReport {
 		@Override
 		public int hashCode() {
 			return this.condition.getClass().hashCode() * 31 + this.outcome.hashCode();
+		}
+	}
+
+	private static class AncestorsMatchedCondition implements Condition {
+
+		@Override
+		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+			throw new UnsupportedOperationException();
 		}
 	}
 
