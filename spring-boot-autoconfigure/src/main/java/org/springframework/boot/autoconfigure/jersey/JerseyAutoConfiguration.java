@@ -24,8 +24,11 @@ import javax.annotation.PostConstruct;
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.ws.rs.ApplicationPath;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -50,6 +53,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.WebApplicationInitializer;
+import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.filter.RequestContextFilter;
 
 /**
@@ -67,7 +71,10 @@ import org.springframework.web.filter.RequestContextFilter;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @AutoConfigureBefore(DispatcherServletAutoConfiguration.class)
 @EnableConfigurationProperties(JerseyProperties.class)
-public class JerseyAutoConfiguration implements WebApplicationInitializer {
+public class JerseyAutoConfiguration implements WebApplicationInitializer,
+		ServletContextAware {
+
+	private Log log = LogFactory.getLog(JerseyAutoConfiguration.class);
 
 	@Autowired
 	private JerseyProperties jersey;
@@ -126,8 +133,12 @@ public class JerseyAutoConfiguration implements WebApplicationInitializer {
 		ServletRegistrationBean registration = new ServletRegistrationBean(
 				new ServletContainer(this.config), this.path);
 		addInitParameters(registration);
-		registration.setName("jerseyServlet");
+		registration.setName(getServletRegistrationName());
 		return registration;
+	}
+
+	private String getServletRegistrationName() {
+		return this.config.getClass().getName();
 	}
 
 	private void addInitParameters(RegistrationBean registration) {
@@ -155,5 +166,22 @@ public class JerseyAutoConfiguration implements WebApplicationInitializer {
 			path = "/" + path;
 		}
 		return path.equals("/") ? "/*" : path + "/*";
+	}
+
+	@Override
+	public void setServletContext(ServletContext servletContext) {
+		String servletRegistrationName = getServletRegistrationName();
+		ServletRegistration registration = servletContext
+				.getServletRegistration(servletRegistrationName);
+		if (registration != null) {
+			if (this.log.isInfoEnabled()) {
+				this.log.info("Configuring existing registration for Jersey servlet '"
+						+ servletRegistrationName + "'");
+			}
+			registration.setInitParameters(this.jersey.getInit());
+			registration.setInitParameter(
+					CommonProperties.METAINF_SERVICES_LOOKUP_DISABLE,
+					Boolean.TRUE.toString());
+		}
 	}
 }
