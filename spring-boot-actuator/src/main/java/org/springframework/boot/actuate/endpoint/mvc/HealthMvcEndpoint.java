@@ -137,14 +137,19 @@ public class HealthMvcEndpoint implements MvcEndpoint, EnvironmentAware {
 
 	private Health getHealth(Principal principal) {
 		long accessTime = System.currentTimeMillis();
-		if (isCacheStale(accessTime) || isSecure(principal) || isUnrestricted()) {
+		if (isCacheStale(accessTime) || isSecure(principal)
+				|| (isUnrestricted() && !isCacheUnrestricted())) {
 			this.lastAccess = accessTime;
 			this.cached = this.delegate.invoke();
 		}
-		if (isSecure(principal) || isUnrestricted()) {
+		if (exposeHealthDetails(principal)) {
 			return this.cached;
 		}
 		return Health.status(this.cached.getStatus()).build();
+	}
+
+	private boolean exposeHealthDetails(Principal principal) {
+		return isSecure(principal) || isUnrestricted();
 	}
 
 	private boolean isCacheStale(long accessTime) {
@@ -157,6 +162,11 @@ public class HealthMvcEndpoint implements MvcEndpoint, EnvironmentAware {
 	private boolean isUnrestricted() {
 		Boolean sensitive = this.propertyResolver.getProperty("sensitive", Boolean.class);
 		return !this.secure || Boolean.FALSE.equals(sensitive);
+	}
+
+	private boolean isCacheUnrestricted() {
+		return Boolean.valueOf(this.propertyResolver.getProperty("cache-unrestricted",
+				Boolean.FALSE.toString()));
 	}
 
 	private boolean isSecure(Principal principal) {

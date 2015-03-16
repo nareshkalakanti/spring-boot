@@ -47,9 +47,13 @@ import static org.mockito.Mockito.mock;
  */
 public class HealthMvcEndpointTests {
 
-	private static final PropertySource<?> NON_SENSITIVE = new MapPropertySource("test",
-			Collections.<String, Object> singletonMap("endpoints.health.sensitive",
-					"false"));
+	private static final PropertySource<?> NON_SENSITIVE = new MapPropertySource(
+			"sensitivity", Collections.<String, Object> singletonMap(
+					"endpoints.health.sensitive", "false"));
+
+	private static final PropertySource<?> CACHE_UNRESTRICTED = new MapPropertySource(
+			"caching", Collections.<String, Object> singletonMap(
+					"endpoints.health.cache-unrestricted", "true"));
 
 	private HealthEndpoint endpoint = null;
 
@@ -161,6 +165,28 @@ public class HealthMvcEndpointTests {
 		assertTrue(result instanceof Health);
 		assertTrue(((Health) result).getStatus() == Status.UP);
 		assertEquals("bar", ((Health) result).getDetails().get("foo"));
+	}
+
+	@Test
+	public void cachingCanBeForcedWhenUnsecuredAndUnrestricted() {
+		this.environment.getPropertySources().addLast(NON_SENSITIVE);
+		this.environment.getPropertySources().addLast(CACHE_UNRESTRICTED);
+		given(this.endpoint.getTimeToLive()).willReturn(10000L);
+		given(this.endpoint.invoke()).willReturn(
+				new Health.Builder().up().withDetail("foo", "bar").build());
+		Object result = this.mvc.invoke(null);
+		assertTrue(result instanceof Health);
+		Health health = (Health) result;
+		assertTrue(health.getStatus() == Status.UP);
+		assertThat(health.getDetails().size(), is(equalTo(1)));
+		assertThat(health.getDetails().get("foo"), is(equalTo((Object) "bar")));
+		given(this.endpoint.invoke()).willReturn(new Health.Builder().down().build());
+		result = this.mvc.invoke(null);
+		assertTrue(result instanceof Health);
+		health = (Health) result;
+		assertTrue(health.getStatus() == Status.UP);
+		assertThat(health.getDetails().size(), is(equalTo(1)));
+		assertThat(health.getDetails().get("foo"), is(equalTo((Object) "bar")));
 	}
 
 	@Test
