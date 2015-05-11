@@ -28,6 +28,8 @@ import org.springframework.boot.test.EnvironmentTestUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.mvc.TypeConstrainedMappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -37,8 +39,11 @@ import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConve
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -212,6 +217,18 @@ public class HttpMessageConvertersAutoConfigurationTests {
 				.getPropertyValue("prettyPrint"));
 	}
 
+	@Test
+	public void typeConstrainedConverterDoesNotPreventAutoConfigurationOfJacksonConverter()
+			throws Exception {
+		this.context.register(JacksonObjectMapperBuilderConfig.class,
+				TypeConstrainedConverterConfiguration.class,
+				HttpMessageConvertersAutoConfiguration.class);
+		this.context.refresh();
+
+		assertThat(this.context.getBeansOfType(MappingJackson2HttpMessageConverter.class)
+				.size(), is(equalTo(2)));
+	}
+
 	private void assertConverterBeanExists(Class<?> type, String beanName) {
 		assertEquals(1, this.context.getBeansOfType(type).size());
 		List<String> beanNames = Arrays.asList(this.context.getBeanDefinitionNames());
@@ -276,6 +293,16 @@ public class HttpMessageConvertersAutoConfigurationTests {
 		@Bean
 		public StringHttpMessageConverter customStringMessageConverter() {
 			return new StringHttpMessageConverter();
+		}
+	}
+
+	@Configuration
+	protected static class TypeConstrainedConverterConfiguration {
+
+		@Bean
+		public TypeConstrainedMappingJackson2HttpMessageConverter typeConstrainedConverter() {
+			return new TypeConstrainedMappingJackson2HttpMessageConverter(
+					ResourceSupport.class);
 		}
 	}
 

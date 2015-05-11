@@ -119,6 +119,10 @@ public class OnBeanCondition extends SpringBootCondition implements
 			beanNames.addAll(getBeanNamesForType(beanFactory, type,
 					context.getClassLoader(), considerHierarchy));
 		}
+		for (String ignoredType : beans.getIgnoredTypes()) {
+			beanNames.removeAll(getBeanNamesForType(beanFactory, ignoredType,
+					context.getClassLoader(), considerHierarchy));
+		}
 		for (String annotation : beans.getAnnotations()) {
 			beanNames.addAll(Arrays.asList(getBeanNamesForAnnotation(beanFactory,
 					annotation, context.getClassLoader(), considerHierarchy)));
@@ -207,6 +211,8 @@ public class OnBeanCondition extends SpringBootCondition implements
 
 		private final List<String> annotations = new ArrayList<String>();
 
+		private final List<String> ignoredTypes = new ArrayList<String>();
+
 		private final SearchStrategy strategy;
 
 		public BeanSearchSpec(ConditionContext context, AnnotatedTypeMetadata metadata,
@@ -217,6 +223,8 @@ public class OnBeanCondition extends SpringBootCondition implements
 			collect(attributes, "value", this.types);
 			collect(attributes, "type", this.types);
 			collect(attributes, "annotation", this.annotations);
+			collect(attributes, "ignored", this.ignoredTypes);
+			collect(attributes, "ignoredType", this.ignoredTypes);
 			if (this.types.isEmpty() && this.names.isEmpty()) {
 				addDeducedBeanType(context, metadata, this.types);
 			}
@@ -244,8 +252,10 @@ public class OnBeanCondition extends SpringBootCondition implements
 		private void collect(MultiValueMap<String, Object> attributes, String key,
 				List<String> destination) {
 			List<String[]> valueList = (List) attributes.get(key);
-			for (String[] valueArray : valueList) {
-				Collections.addAll(destination, valueArray);
+			if (valueList != null) {
+				for (String[] valueArray : valueList) {
+					Collections.addAll(destination, valueArray);
+				}
 			}
 		}
 
@@ -301,6 +311,10 @@ public class OnBeanCondition extends SpringBootCondition implements
 
 		public List<String> getAnnotations() {
 			return this.annotations;
+		}
+
+		public List<String> getIgnoredTypes() {
+			return this.ignoredTypes;
 		}
 
 		@Override
