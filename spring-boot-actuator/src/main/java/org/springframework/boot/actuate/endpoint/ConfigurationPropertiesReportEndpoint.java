@@ -47,6 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.Annotated;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
@@ -321,6 +322,10 @@ public class ConfigurationPropertiesReportEndpoint extends
 			return result;
 		}
 
+		private boolean isMapProperty(AnnotatedMember member) {
+			return Map.class.isAssignableFrom(member.getRawType());
+		}
+
 		private boolean isReadable(BeanDescription beanDesc, BeanPropertyWriter writer) {
 			String parentType = beanDesc.getType().getRawClass().getName();
 			String type = writer.getPropertyType().getName();
@@ -332,7 +337,8 @@ public class ConfigurationPropertiesReportEndpoint extends
 			// the property, so it's mainly for user-defined beans.
 			return (setter != null)
 					|| ClassUtils.getPackageName(parentType).equals(
-							ClassUtils.getPackageName(type));
+							ClassUtils.getPackageName(type))
+					|| isMapProperty(writer.getMember());
 		}
 
 		private AnnotatedMethod findSetter(BeanDescription beanDesc,

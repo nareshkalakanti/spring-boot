@@ -16,6 +16,7 @@
 
 package org.springframework.boot.actuate.endpoint;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
@@ -28,6 +29,9 @@ import org.springframework.context.annotation.Configuration;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -159,8 +163,20 @@ public class ConfigurationPropertiesReportEndpointTests extends
 		Map<String, Object> properties = report.invoke();
 		Map<String, Object> nestedProperties = (Map<String, Object>) ((Map<String, Object>) properties
 				.get("testProperties")).get("properties");
-		System.out.println(nestedProperties);
 		assertThat(nestedProperties.get("mixedBoolean"), equalTo((Object) true));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void nestedMap() throws Exception {
+		ConfigurationPropertiesReportEndpoint report = getEndpointBean();
+		Map<String, Object> properties = report.invoke();
+		Map<String, Object> nestedProperties = (Map<String, Object>) ((Map<String, Object>) properties
+				.get("testProperties")).get("properties");
+		Map<String, String> nestedMap = (Map<String, String>) nestedProperties
+				.get("nestedMap");
+		assertThat(nestedMap, is(notNullValue()));
+		assertThat(nestedMap, hasEntry("a", "alpha"));
 	}
 
 	@Configuration
@@ -197,6 +213,12 @@ public class ConfigurationPropertiesReportEndpointTests extends
 
 		private Boolean mixedBoolean = true;
 
+		private Map<String, String> nestedMap = new HashMap<String, String>();
+
+		public TestProperties() {
+			this.nestedMap.put("a", "alpha");
+		}
+
 		public String getDbPassword() {
 			return this.dbPassword;
 		}
@@ -219,6 +241,10 @@ public class ConfigurationPropertiesReportEndpointTests extends
 
 		public void setMixedBoolean(Boolean mixedBoolean) {
 			this.mixedBoolean = mixedBoolean;
+		}
+
+		public Map<String, String> getNestedMap() {
+			return this.nestedMap;
 		}
 
 	}
