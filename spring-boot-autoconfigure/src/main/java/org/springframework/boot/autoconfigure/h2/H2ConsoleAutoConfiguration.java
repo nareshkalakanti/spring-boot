@@ -17,15 +17,15 @@
 package org.springframework.boot.autoconfigure.h2;
 
 import org.h2.server.web.WebServlet;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
@@ -45,6 +45,7 @@ public class H2ConsoleAutoConfiguration {
 
 	@Configuration
 	@ConditionalOnClass(WebSecurityConfigurerAdapter.class)
+	@Order(Ordered.LOWEST_PRECEDENCE)
 	static class H2ConsoleSecurityConfiguration {
 
 		@Bean
@@ -54,9 +55,6 @@ public class H2ConsoleAutoConfiguration {
 
 		private static class H2ConsoleSecurityConfigurer extends
 				WebSecurityConfigurerAdapter {
-
-			@Autowired
-			private SecurityProperties securityProperties;
 
 			@Override
 			public void configure(HttpSecurity http) throws Exception {
