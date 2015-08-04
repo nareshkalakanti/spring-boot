@@ -71,6 +71,11 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
 			<groupId>com.samskivert</groupId>
 			<artifactId>jmustache</artifactId>
 			<optional>true</optional>
