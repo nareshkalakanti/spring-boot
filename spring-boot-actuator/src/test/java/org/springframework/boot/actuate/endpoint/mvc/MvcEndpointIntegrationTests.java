@@ -81,11 +81,54 @@ public class MvcEndpointIntegrationTests {
 	}
 
 	@Test
-	public void endpointsAreSecureByDefault() throws Exception {
+	public void nonSensitiveEndpointsAreNotSecureByDefault() throws Exception {
+		this.context = new AnnotationConfigWebApplicationContext();
+		this.context.register(SecureConfiguration.class);
+		MockMvc mockMvc = createSecureMockMvc();
+		mockMvc.perform(get("/info")).andExpect(status().isOk());
+		mockMvc.perform(get("/actuator")).andExpect(status().isOk());
+	}
+
+	@Test
+	public void nonSensitiveEndpointsAreNotSecureByDefaultWithCustomContextPath()
+			throws Exception {
+		this.context = new AnnotationConfigWebApplicationContext();
+		this.context.register(SecureConfiguration.class);
+		EnvironmentTestUtils.addEnvironment(this.context,
+				"management.context-path:/management");
+		MockMvc mockMvc = createSecureMockMvc();
+		mockMvc.perform(get("/management/info")).andExpect(status().isOk());
+		mockMvc.perform(get("/management/")).andExpect(status().isOk());
+	}
+
+	@Test
+	public void sensitiveEndpointsAreSecureByDefault() throws Exception {
 		this.context = new AnnotationConfigWebApplicationContext();
 		this.context.register(SecureConfiguration.class);
 		MockMvc mockMvc = createSecureMockMvc();
 		mockMvc.perform(get("/beans")).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	public void sensitiveEndpointsAreSecureByDefaultWithCustomContextPath()
+			throws Exception {
+		this.context = new AnnotationConfigWebApplicationContext();
+		this.context.register(SecureConfiguration.class);
+		EnvironmentTestUtils.addEnvironment(this.context,
+				"management.context-path:/management");
+		MockMvc mockMvc = createSecureMockMvc();
+		mockMvc.perform(get("/management/beans")).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	public void endpointSecurityCanBeDisabledWithCustomContextPath() throws Exception {
+		this.context = new AnnotationConfigWebApplicationContext();
+		this.context.register(SecureConfiguration.class);
+		EnvironmentTestUtils.addEnvironment(this.context,
+				"management.context-path:/management",
+				"management.security.enabled:false");
+		MockMvc mockMvc = createSecureMockMvc();
+		mockMvc.perform(get("/management/beans")).andExpect(status().isOk());
 	}
 
 	@Test
