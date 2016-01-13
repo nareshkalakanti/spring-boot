@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -295,7 +295,7 @@ public class RepackagerTests {
 		final File libNonJarFile = this.temporaryFolder.newFile();
 		FileCopyUtils.copy(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }, libNonJarFile);
 		this.testJarFile.addClass("a/b/C.class", ClassWithMainMethod.class);
-		this.testJarFile.addFile("lib/" + libJarFileToUnpack.getName(),
+		this.testJarFile.addFile("BOOT-INF/lib/" + libJarFileToUnpack.getName(),
 				libJarFileToUnpack);
 		File file = this.testJarFile.getFile();
 		libJarFile.setLastModified(JAN_1_1980);
@@ -309,12 +309,14 @@ public class RepackagerTests {
 				callback.library(new Library(libNonJarFile, LibraryScope.COMPILE));
 			}
 		});
-		assertThat(hasEntry(file, "lib/" + libJarFile.getName()), equalTo(true));
-		assertThat(hasEntry(file, "lib/" + libJarFileToUnpack.getName()), equalTo(true));
-		assertThat(hasEntry(file, "lib/" + libNonJarFile.getName()), equalTo(false));
-		JarEntry entry = getEntry(file, "lib/" + libJarFile.getName());
+		assertThat(hasEntry(file, "BOOT-INF/lib/" + libJarFile.getName()), equalTo(true));
+		assertThat(hasEntry(file, "BOOT-INF/lib/" + libJarFileToUnpack.getName()),
+				equalTo(true));
+		assertThat(hasEntry(file, "BOOT-INF/lib/" + libNonJarFile.getName()),
+				equalTo(false));
+		JarEntry entry = getEntry(file, "BOOT-INF/lib/" + libJarFile.getName());
 		assertThat(entry.getTime(), equalTo(JAN_1_1985));
-		entry = getEntry(file, "lib/" + libJarFileToUnpack.getName());
+		entry = getEntry(file, "BOOT-INF/lib/" + libJarFileToUnpack.getName());
 		assertThat(entry.getComment(), startsWith("UNPACK:"));
 		assertThat(entry.getComment().length(), equalTo(47));
 	}
@@ -399,9 +401,10 @@ public class RepackagerTests {
 		});
 		JarFile jarFile = new JarFile(file);
 		try {
-			assertThat(jarFile.getEntry("lib/" + nestedFile.getName()).getMethod(),
+			assertThat(
+					jarFile.getEntry("BOOT-INF/lib/" + nestedFile.getName()).getMethod(),
 					equalTo(ZipEntry.STORED));
-			assertThat(jarFile.getEntry("test/nested.jar").getMethod(),
+			assertThat(jarFile.getEntry("BOOT-INF/classes/test/nested.jar").getMethod(),
 					equalTo(ZipEntry.STORED));
 		}
 		finally {
@@ -436,7 +439,8 @@ public class RepackagerTests {
 		TestJarFile nested = new TestJarFile(this.temporaryFolder);
 		nested.addClass("a/b/C.class", ClassWithoutMainMethod.class);
 		final File nestedFile = nested.getFile();
-		this.testJarFile.addFile("lib/" + nestedFile.getName(), nested.getFile());
+		this.testJarFile.addFile("BOOT-INF/lib/" + nestedFile.getName(),
+				nested.getFile());
 		this.testJarFile.addClass("A.class", ClassWithMainMethod.class);
 		File file = this.testJarFile.getFile();
 		Repackager repackager = new Repackager(file);
@@ -450,7 +454,8 @@ public class RepackagerTests {
 		});
 		JarFile jarFile = new JarFile(file);
 		try {
-			assertThat(jarFile.getEntry("lib/" + nestedFile.getName()).getComment(),
+			assertThat(
+					jarFile.getEntry("BOOT-INF/lib/" + nestedFile.getName()).getComment(),
 					startsWith("UNPACK:"));
 		}
 		finally {
@@ -464,7 +469,8 @@ public class RepackagerTests {
 		TestJarFile nested = new TestJarFile(this.temporaryFolder);
 		nested.addClass("a/b/C.class", ClassWithoutMainMethod.class);
 		final File nestedFile = nested.getFile();
-		this.testJarFile.addFile("lib/" + nestedFile.getName(), nested.getFile());
+		this.testJarFile.addFile("BOOT-INF/lib/" + nestedFile.getName(),
+				nested.getFile());
 		this.testJarFile.addClass("A.class", ClassWithMainMethod.class);
 		File file = this.testJarFile.getFile();
 		Repackager repackager = new Repackager(file);
@@ -482,7 +488,7 @@ public class RepackagerTests {
 		});
 		JarFile jarFile = new JarFile(file);
 		try {
-			assertThat(jarFile.getEntry("lib/" + nestedFile.getName()).getSize(),
+			assertThat(jarFile.getEntry("BOOT-INF/lib/" + nestedFile.getName()).getSize(),
 					equalTo(sourceLength));
 		}
 		finally {
