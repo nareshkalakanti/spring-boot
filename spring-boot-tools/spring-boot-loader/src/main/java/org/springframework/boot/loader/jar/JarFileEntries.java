@@ -87,7 +87,7 @@ class JarFileEntries implements CentralDirectoryVisitor, Iterable<JarEntry> {
 	@Override
 	public void visitStart(CentralDirectoryEndRecord endRecord,
 			RandomAccessData centralDirectoryData) {
-		int maxSize = endRecord.getNumberOfRecords();
+		int maxSize = (int) endRecord.getNumberOfRecords();
 		this.centralDirectoryData = centralDirectoryData;
 		this.hashCodes = new int[maxSize];
 		this.centralDirectoryOffsets = new int[maxSize];

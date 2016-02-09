@@ -60,7 +60,7 @@ class CentralDirectoryParser {
 				.getInputStream(ResourceAccess.ONCE);
 		try {
 			int dataOffset = 0;
-			for (int i = 0; i < endRecord.getNumberOfRecords(); i++) {
+			for (long i = 0; i < endRecord.getNumberOfRecords(); i++) {
 				CentralDirectoryFileHeader fileHeader = CentralDirectoryFileHeader
 						.fromInputStream(inputStream);
 				visitFileHeader(dataOffset, fileHeader);

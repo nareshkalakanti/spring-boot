@@ -93,6 +93,33 @@ public class CentralDirectoryParserTests {
 		assertThat(headers.hasNext()).isFalse();
 	}
 
+	@Test
+	public void zip64() throws Exception {
+		CentralDirectoryParser parser = new CentralDirectoryParser();
+		parser.addVisitor(new CentralDirectoryVisitor() {
+
+			@Override
+			public void visitStart(CentralDirectoryEndRecord endRecord,
+					RandomAccessData centralDirectoryData) {
+				System.out.println(endRecord.getNumberOfRecords());
+			}
+
+			@Override
+			public void visitFileHeader(CentralDirectoryFileHeader fileHeader,
+					int dataOffset) {
+			}
+
+			@Override
+			public void visitEnd() {
+			}
+		});
+
+		parser.parse(
+				new RandomAccessDataFile(new File(
+						"/Users/awilkinson/Downloads/spark/opt/mapr/spark/spark-1.5.2/lib/spark-assembly-1.5.2-mapr-1512-hadoop2.7.0-mapr-1509.jar")),
+				false);
+	}
+
 	private static class Collector implements CentralDirectoryVisitor {
 
 		private List<CentralDirectoryFileHeader> headers = new ArrayList<CentralDirectoryFileHeader>();
