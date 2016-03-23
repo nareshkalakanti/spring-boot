@@ -22,8 +22,10 @@ apply plugin: 'spring-boot'
 
 jar {
 	baseName = 'spring-boot-sample-actuator'
-	version =  '0.0.0'
 }
+
+group = 'org.springframework.boot'
+version = springBootVersion
 
 repositories {
 	// NOTE: You should declare only repositories that you need here
@@ -58,4 +60,15 @@ springBoot {
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '1.6'
+}
+
+task buildInfo(type: org.springframework.boot.gradle.buildinfo.BuildInfo) {
+	additionalProperties = [
+		'java.source':project.sourceCompatibility,
+		'java.target':project.targetCompatibility
+	]
+}
+
+classes {
+	dependsOn buildInfo
 }
