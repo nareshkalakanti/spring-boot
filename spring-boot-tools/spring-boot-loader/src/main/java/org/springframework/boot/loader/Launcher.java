@@ -50,16 +50,12 @@ public abstract class Launcher {
 	 * Launch the application. This method is the initial entry point that should be
 	 * called by a subclass {@code public static void main(String[] args)} method.
 	 * @param args the incoming arguments
+	 * @throws Exception if the application fails to launch
 	 */
-	protected void launch(String[] args) {
-		try {
-			JarFile.registerUrlProtocolHandler();
-			ClassLoader classLoader = createClassLoader(getClassPathArchives());
-			launch(args, getMainClass(), classLoader);
-		}
-		catch (Exception ex) {
-			System.exit(1);
-		}
+	protected void launch(String[] args) throws Exception {
+		JarFile.registerUrlProtocolHandler();
+		ClassLoader classLoader = createClassLoader(getClassPathArchives());
+		launch(args, getMainClass(), classLoader);
 	}
 
 	/**
@@ -95,9 +91,9 @@ public abstract class Launcher {
 	 */
 	protected void launch(String[] args, String mainClass, ClassLoader classLoader)
 			throws Exception {
-		Runnable runner = createMainMethodRunner(mainClass, args, classLoader);
+		ExceptionAction runner = createMainMethodRunner(mainClass, args, classLoader);
 		Thread.currentThread().setContextClassLoader(classLoader);
-		runner.run();
+		runner.perform();
 	}
 
 	/**
@@ -105,15 +101,15 @@ public abstract class Launcher {
 	 * @param mainClass the main class
 	 * @param args the incoming arguments
 	 * @param classLoader the classloader
-	 * @return a runnable used to start the application
+	 * @return an ExceptionAction used to start the application
 	 * @throws Exception if the main method runner cannot be created
 	 */
-	protected Runnable createMainMethodRunner(String mainClass, String[] args,
+	protected ExceptionAction createMainMethodRunner(String mainClass, String[] args,
 			ClassLoader classLoader) throws Exception {
 		Class<?> runnerClass = classLoader.loadClass(RUNNER_CLASS);
 		Constructor<?> constructor = runnerClass.getConstructor(String.class,
 				String[].class);
-		return (Runnable) constructor.newInstance(mainClass, args);
+		return (ExceptionAction) constructor.newInstance(mainClass, args);
 	}
 
 	/**

@@ -16,16 +16,16 @@
 
 package org.springframework.boot.loader;
 
-import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Utility class that used by {@link Launcher}s to call a main method. This class allows
- * methods to be executed within a thread configured with a specific context class loader.
+ * Utility class that used by {@link Launcher}s to call a main method.
  *
  * @author Phillip Webb
+ * @author Andy Wilkinson
  */
-public class MainMethodRunner implements Runnable {
+public class MainMethodRunner implements ExceptionAction {
 
 	private final String mainClassName;
 
@@ -42,7 +42,7 @@ public class MainMethodRunner implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public void perform() throws Exception {
 		try {
 			Class<?> mainClass = Thread.currentThread().getContextClassLoader()
 					.loadClass(this.mainClassName);
@@ -53,13 +53,11 @@ public class MainMethodRunner implements Runnable {
 			}
 			mainMethod.invoke(null, new Object[] { this.args });
 		}
-		catch (Exception ex) {
-			UncaughtExceptionHandler handler = Thread.currentThread()
-					.getUncaughtExceptionHandler();
-			if (handler != null) {
-				handler.uncaughtException(Thread.currentThread(), ex);
+		catch (InvocationTargetException ex) {
+			if (ex.getTargetException() instanceof Exception) {
+				throw (Exception) ex.getTargetException();
 			}
-			throw new RuntimeException(ex);
+			throw ex;
 		}
 	}
 
