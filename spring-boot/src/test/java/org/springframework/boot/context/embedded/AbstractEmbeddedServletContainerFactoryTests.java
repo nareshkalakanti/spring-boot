@@ -589,7 +589,7 @@ public abstract class AbstractEmbeddedServletContainerFactoryTests {
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
-	private Ssl getSsl(ClientAuth clientAuth, String keyPassword, String keyStore) {
+	protected Ssl getSsl(ClientAuth clientAuth, String keyPassword, String keyStore) {
 		return getSsl(clientAuth, keyPassword, keyStore, null, null, null);
 	}
 
