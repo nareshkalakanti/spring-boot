@@ -32,9 +32,9 @@ import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.spring4.resourceresolver.SpringResourceResourceResolver;
+import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templateresolver.ITemplateResolver;
-import org.thymeleaf.templateresolver.TemplateResolver;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -69,21 +69,18 @@ import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
 @Configuration
 @EnableConfigurationProperties(ThymeleafProperties.class)
 @ConditionalOnClass(SpringTemplateEngine.class)
-@ConditionalOnMissingClass("org.thymeleaf.templatemode.TemplateMode")
 @AutoConfigureAfter(WebMvcAutoConfiguration.class)
 public class ThymeleafAutoConfiguration {
 
 	private static final Log logger = LogFactory.getLog(ThymeleafAutoConfiguration.class);
 
-	@Configuration
-	@ConditionalOnMissingBean(name = "defaultTemplateResolver")
-	public static class DefaultTemplateResolverConfiguration {
+	static class AbstractTemplateResolverConfiguration {
 
 		private final ThymeleafProperties properties;
 
 		private final ApplicationContext applicationContext;
 
-		public DefaultTemplateResolverConfiguration(ThymeleafProperties properties,
+		AbstractTemplateResolverConfiguration(ThymeleafProperties properties,
 				ApplicationContext applicationContext) {
 			this.properties = properties;
 			this.applicationContext = applicationContext;
@@ -104,9 +101,9 @@ public class ThymeleafAutoConfiguration {
 		}
 
 		@Bean
-		public TemplateResolver defaultTemplateResolver() {
-			TemplateResolver resolver = new TemplateResolver();
-			resolver.setResourceResolver(thymeleafResourceResolver());
+		public SpringResourceTemplateResolver defaultTemplateResolver() {
+			SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
+			resolver.setApplicationContext(this.applicationContext);
 			resolver.setPrefix(this.properties.getPrefix());
 			resolver.setSuffix(this.properties.getSuffix());
 			resolver.setTemplateMode(this.properties.getMode());
@@ -121,10 +118,47 @@ public class ThymeleafAutoConfiguration {
 			return resolver;
 		}
 
-		@Bean
-		public SpringResourceResourceResolver thymeleafResourceResolver() {
-			return new SpringResourceResourceResolver();
+	}
+
+	@Configuration
+	@ConditionalOnMissingClass("org.thymeleaf.templatemode.TemplateMode")
+	static class Thymeleaf2Configuration {
+
+		@Configuration
+		@ConditionalOnMissingBean(name = "defaultTemplateResolver")
+		@ConditionalOnMissingClass("org.thymeleaf.templatemode.TemplateMode")
+		public static class DefaultTemplateResolverConfiguration
+				extends AbstractTemplateResolverConfiguration {
+
+			public DefaultTemplateResolverConfiguration(ThymeleafProperties properties,
+					ApplicationContext applicationContext) {
+				super(properties, applicationContext);
+			}
+
+			@Bean
+			public SpringResourceResourceResolver thymeleafResourceResolver() {
+				return new SpringResourceResourceResolver();
+			}
 		}
+
+	}
+
+	@Configuration
+	@ConditionalOnClass(name = "org.thymeleaf.templatemode.TemplateMode")
+	static class Thymeleaf3Configuration {
+
+		@Configuration
+		@ConditionalOnMissingBean(name = "defaultTemplateResolver")
+		public static class DefaultTemplateResolverConfiguration
+				extends AbstractTemplateResolverConfiguration {
+
+			public DefaultTemplateResolverConfiguration(ThymeleafProperties properties,
+					ApplicationContext applicationContext) {
+				super(properties, applicationContext);
+			}
+
+		}
+
 	}
 
 	@Configuration
@@ -239,7 +273,22 @@ public class ThymeleafAutoConfiguration {
 		@ConditionalOnProperty(name = "spring.thymeleaf.enabled", matchIfMissing = true)
 		public ThymeleafViewResolver thymeleafViewResolver() {
 			ThymeleafViewResolver resolver = new ThymeleafViewResolver();
-			resolver.setTemplateEngine(this.templateEngine);
+			try {
+				resolver.setTemplateEngine(this.templateEngine);
+			}
+			catch (NoSuchMethodError ex) {
+				// Thymeleaf 3
+				try {
+					resolver.getClass()
+							.getMethod("setTemplateEngine",
+									resolver.getClass().getClassLoader()
+											.loadClass("org.thymeleaf.ITemplateEngine"))
+							.invoke(resolver, this.templateEngine);
+				}
+				catch (Exception ex2) {
+					throw new IllegalStateException(ex2);
+				}
+			}
 			resolver.setCharacterEncoding(this.properties.getEncoding().name());
 			resolver.setContentType(appendCharset(this.properties.getContentType(),
 					resolver.getCharacterEncoding()));
