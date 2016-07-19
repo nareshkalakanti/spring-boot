@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link RabbitProperties}.
@@ -35,6 +36,7 @@ public class RabbitPropertiesTests {
 	public void addressesNotSet() {
 		assertEquals("localhost", this.properties.getHost());
 		assertEquals(5672, this.properties.getPort());
+		assertEquals("localhost:5672", this.properties.getAddresses());
 	}
 
 	@Test
@@ -42,6 +44,7 @@ public class RabbitPropertiesTests {
 		this.properties.setAddresses("myhost:9999");
 		assertEquals("myhost", this.properties.getHost());
 		assertEquals(9999, this.properties.getPort());
+		assertEquals("myhost:9999", this.properties.getAddresses());
 	}
 
 	@Test
@@ -49,6 +52,7 @@ public class RabbitPropertiesTests {
 		this.properties.setAddresses("myhost:9999,otherhost:1111");
 		assertNull(this.properties.getHost());
 		assertEquals(9999, this.properties.getPort());
+		assertEquals("myhost:9999,otherhost:1111", this.properties.getAddresses());
 	}
 
 	@Test
@@ -58,6 +62,7 @@ public class RabbitPropertiesTests {
 		assertEquals(9999, this.properties.getPort());
 		assertEquals("root", this.properties.getUsername());
 		assertEquals("host", this.properties.getVirtualHost());
+		assertEquals("myhost:9999,otherhost:1111", this.properties.getAddresses());
 	}
 
 	@Test
@@ -74,6 +79,7 @@ public class RabbitPropertiesTests {
 		assertEquals(1111, this.properties.getPort());
 		assertEquals("root", this.properties.getUsername());
 		assertEquals("host", this.properties.getVirtualHost());
+		assertEquals("otherhost:1111", this.properties.getAddresses());
 	}
 
 	@Test
@@ -93,6 +99,25 @@ public class RabbitPropertiesTests {
 		assertEquals(1111, this.properties.getPort());
 		assertEquals("root", this.properties.getUsername());
 		assertEquals("/", this.properties.getVirtualHost());
+		assertEquals("otherhost:1111", this.properties.getAddresses());
+	}
+
+	@Test
+	public void singleAmqpsAddress() {
+		this.properties.setAddresses("amqps://rabbit.example.com:1234");
+		assertEquals("rabbit.example.com", this.properties.getHost());
+		assertEquals(1234, this.properties.getPort());
+		assertTrue(this.properties.getSsl().isEnabled());
+		assertEquals("rabbit.example.com:1234", this.properties.getAddresses());
+	}
+
+	@Test
+	public void singleAmqpsAddressWithDefaultPort() {
+		this.properties.setAddresses("amqps://rabbit.example.com");
+		assertEquals("rabbit.example.com", this.properties.getHost());
+		assertEquals(5671, this.properties.getPort());
+		assertTrue(this.properties.getSsl().isEnabled());
+		assertEquals("rabbit.example.com:5671", this.properties.getAddresses());
 	}
 
 	@Test

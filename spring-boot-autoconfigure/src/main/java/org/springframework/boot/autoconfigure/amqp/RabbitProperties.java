@@ -35,6 +35,10 @@ import org.springframework.util.StringUtils;
 @ConfigurationProperties(prefix = "spring.rabbitmq")
 public class RabbitProperties {
 
+	private static final String ADDRESS_PREFIX_AMQP = "amqp://";
+
+	private static final String ADDRESS_PREFIX_AMQPS = "amqps://";
+
 	/**
 	 * RabbitMQ host.
 	 */
@@ -119,8 +123,14 @@ public class RabbitProperties {
 		Set<String> result = new LinkedHashSet<String>();
 		for (String address : StringUtils.commaDelimitedListToStringArray(addresses)) {
 			address = address.trim();
-			if (address.startsWith("amqp://")) {
-				address = address.substring("amqp://".length());
+			int defaultPort = this.port;
+			if (address.startsWith(ADDRESS_PREFIX_AMQP)) {
+				address = address.substring(ADDRESS_PREFIX_AMQP.length());
+			}
+			else if (address.startsWith(ADDRESS_PREFIX_AMQPS)) {
+				address = address.substring(ADDRESS_PREFIX_AMQPS.length());
+				this.ssl.setEnabled(true);
+				defaultPort = 5671;
 			}
 			if (address.contains("@")) {
 				String[] split = StringUtils.split(address, "@");
@@ -138,7 +148,7 @@ public class RabbitProperties {
 				address = address.substring(0, index);
 			}
 			if (!address.contains(":")) {
-				address = address + ":" + this.port;
+				address = address + ":" + defaultPort;
 			}
 			result.add(address);
 		}
