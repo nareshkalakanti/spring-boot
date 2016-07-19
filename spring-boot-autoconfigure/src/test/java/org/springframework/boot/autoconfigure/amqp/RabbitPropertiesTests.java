@@ -46,23 +46,23 @@ public class RabbitPropertiesTests {
 	@Test
 	public void addressesDoubleValued() {
 		this.properties.setAddresses("myhost:9999,otherhost:1111");
-		assertThat(this.properties.getHost()).isNull();
+		assertThat(this.properties.getHost()).isEqualTo("myhost");
 		assertThat(this.properties.getPort()).isEqualTo(9999);
 	}
 
 	@Test
 	public void addressesDoubleValuedWithCredentials() {
 		this.properties.setAddresses("myhost:9999,root:password@otherhost:1111/host");
-		assertThat(this.properties.getHost()).isNull();
+		assertThat(this.properties.getHost()).isEqualTo("myhost");
 		assertThat(this.properties.getPort()).isEqualTo(9999);
-		assertThat(this.properties.getUsername()).isEqualTo("root");
-		assertThat(this.properties.getVirtualHost()).isEqualTo("host");
+		assertThat(this.properties.getUsername()).isNull();
+		assertThat(this.properties.getVirtualHost()).isNull();
 	}
 
 	@Test
 	public void addressesDoubleValuedPreservesOrder() {
 		this.properties.setAddresses("myhost:9999,ahost:1111/host");
-		assertThat(this.properties.getHost()).isNull();
+		assertThat(this.properties.getHost()).isEqualTo("myhost");
 		assertThat(this.properties.getAddresses()).isEqualTo("myhost:9999,ahost:1111");
 	}
 

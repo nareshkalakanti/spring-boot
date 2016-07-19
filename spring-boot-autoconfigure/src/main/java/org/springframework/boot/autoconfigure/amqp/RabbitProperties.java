@@ -16,13 +16,14 @@
 
 package org.springframework.boot.autoconfigure.amqp;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory.CacheMode;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -105,15 +106,13 @@ public class RabbitProperties {
 
 	private final Template template = new Template();
 
+	private List<Address> parsedAddresses;
+
 	public String getHost() {
-		if (this.addresses == null) {
+		if (CollectionUtils.isEmpty(this.parsedAddresses)) {
 			return this.host;
 		}
-		String[] hosts = StringUtils.delimitedListToStringArray(this.addresses, ":");
-		if (hosts.length == 2) {
-			return hosts[0];
-		}
-		return null;
+		return this.parsedAddresses.get(0).host;
 	}
 
 	public void setHost(String host) {
@@ -121,54 +120,35 @@ public class RabbitProperties {
 	}
 
 	public int getPort() {
-		if (this.addresses == null) {
+		if (CollectionUtils.isEmpty(this.parsedAddresses)) {
 			return this.port;
 		}
-		String[] hosts = StringUtils.delimitedListToStringArray(this.addresses, ":");
-		if (hosts.length >= 2) {
-			return Integer
-					.valueOf(StringUtils.commaDelimitedListToStringArray(hosts[1])[0]);
-		}
-		return this.port;
+		Address address = this.parsedAddresses.get(0);
+		return getPort(address);
 	}
 
 	public void setAddresses(String addresses) {
-		this.addresses = parseAddresses(addresses);
+		this.parsedAddresses = parseAddresses(addresses);
+		List<String> addressStrings = new ArrayList<String>();
+		for (Address parsedAddress : this.parsedAddresses) {
+			addressStrings.add(parsedAddress.host + ":" + getPort(parsedAddress));
+		}
+		this.addresses = StringUtils.collectionToCommaDelimitedString(addressStrings);
 	}
 
 	public String getAddresses() {
-		return (this.addresses == null ? this.host + ":" + this.port : this.addresses);
+		if (CollectionUtils.isEmpty(this.parsedAddresses)) {
+			return this.host + ":" + this.port;
+		}
+		return this.addresses;
 	}
 
-	private String parseAddresses(String addresses) {
-		Set<String> result = new LinkedHashSet<String>();
+	private List<Address> parseAddresses(String addresses) {
+		List<Address> parsedAddresses = new ArrayList<Address>();
 		for (String address : StringUtils.commaDelimitedListToStringArray(addresses)) {
-			address = address.trim();
-			if (address.startsWith("amqp://")) {
-				address = address.substring("amqp://".length());
-			}
-			if (address.contains("@")) {
-				String[] split = StringUtils.split(address, "@");
-				String creds = split[0];
-				address = split[1];
-				split = StringUtils.split(creds, ":");
-				this.username = split[0];
-				if (split.length > 0) {
-					this.password = split[1];
-				}
-			}
-			int index = address.indexOf("/");
-			if (index >= 0 && index < address.length()) {
-				setVirtualHost(address.substring(index + 1));
-				address = address.substring(0, index);
-			}
-			if (!address.contains(":")) {
-				address = address + ":" + this.port;
-			}
-			result.add(address);
+			parsedAddresses.add(new Address(address));
 		}
-		return (result.isEmpty() ? null
-				: StringUtils.collectionToCommaDelimitedString(result));
+		return parsedAddresses;
 	}
 
 	public void setPort(int port) {
@@ -176,7 +156,11 @@ public class RabbitProperties {
 	}
 
 	public String getUsername() {
-		return this.username;
+		if (CollectionUtils.isEmpty(this.parsedAddresses)) {
+			return this.username;
+		}
+		Address address = this.parsedAddresses.get(0);
+		return address.username == null ? this.username : address.username;
 	}
 
 	public void setUsername(String username) {
@@ -184,7 +168,11 @@ public class RabbitProperties {
 	}
 
 	public String getPassword() {
-		return this.password;
+		if (CollectionUtils.isEmpty(this.parsedAddresses)) {
+			return this.password;
+		}
+		Address address = this.parsedAddresses.get(0);
+		return address.password == null ? this.password : address.password;
 	}
 
 	public void setPassword(String password) {
@@ -196,7 +184,11 @@ public class RabbitProperties {
 	}
 
 	public String getVirtualHost() {
-		return this.virtualHost;
+		if (CollectionUtils.isEmpty(this.parsedAddresses)) {
+			return this.virtualHost;
+		}
+		Address address = this.parsedAddresses.get(0);
+		return address.virtualHost == null ? this.virtualHost : address.virtualHost;
 	}
 
 	public void setVirtualHost(String virtualHost) {
@@ -245,6 +237,10 @@ public class RabbitProperties {
 
 	public Template getTemplate() {
 		return this.template;
+	}
+
+	private int getPort(Address address) {
+		return address.port == null ? this.port : address.port;
 	}
 
 	public static class Ssl {
@@ -648,6 +644,74 @@ public class RabbitProperties {
 
 		public void setStateless(boolean stateless) {
 			this.stateless = stateless;
+		}
+
+	}
+
+	private static final class Address {
+
+		private static final String PREFIX_AMQP = "amqp://";
+
+		private String host;
+
+		private Integer port;
+
+		private String username;
+
+		private String password;
+
+		private String virtualHost;
+
+		private Address(String input) {
+			input = input.trim();
+			input = trimPrefix(input);
+			input = parseUsernameAndPassword(input);
+			input = parseVirtualHost(input);
+			parseHostAndPort(input);
+		}
+
+		private String trimPrefix(String input) {
+			if (input.startsWith(PREFIX_AMQP)) {
+				input = input.substring(PREFIX_AMQP.length());
+			}
+			return input;
+		}
+
+		private String parseUsernameAndPassword(String input) {
+			if (input.contains("@")) {
+				String[] split = StringUtils.split(input, "@");
+				String creds = split[0];
+				input = split[1];
+				split = StringUtils.split(creds, ":");
+				this.username = split[0];
+				if (split.length > 0) {
+					this.password = split[1];
+				}
+			}
+			return input;
+		}
+
+		private String parseVirtualHost(String input) {
+			int hostIndex = input.indexOf("/");
+			if (hostIndex >= 0 && hostIndex < input.length()) {
+				this.virtualHost = input.substring(hostIndex + 1);
+				if (this.virtualHost.length() == 0) {
+					this.virtualHost = "/";
+				}
+				input = input.substring(0, hostIndex);
+			}
+			return input;
+		}
+
+		private void parseHostAndPort(String input) {
+			int portIndex = input.indexOf(':');
+			if (portIndex == -1) {
+				this.host = input;
+			}
+			else {
+				this.host = input.substring(0, portIndex);
+				this.port = Integer.valueOf(input.substring(portIndex + 1));
+			}
 		}
 
 	}
