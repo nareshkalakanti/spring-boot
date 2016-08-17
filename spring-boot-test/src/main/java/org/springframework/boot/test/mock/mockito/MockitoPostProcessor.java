@@ -93,6 +93,8 @@ public class MockitoPostProcessor extends InstantiationAwareBeanPostProcessorAda
 
 	private final BeanNameGenerator beanNameGenerator = new DefaultBeanNameGenerator();
 
+	private final MockitoBeans mockitoBeans = new MockitoBeans();
+
 	private Map<Definition, String> beanNameRegistry = new HashMap<Definition, String>();
 
 	private Map<Field, RegisteredField> fieldRegistry = new HashMap<Field, RegisteredField>();
@@ -131,6 +133,7 @@ public class MockitoPostProcessor extends InstantiationAwareBeanPostProcessorAda
 
 	private void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory,
 			BeanDefinitionRegistry registry) {
+		beanFactory.registerSingleton(MockitoBeans.class.getName(), this.mockitoBeans);
 		DefinitionsParser parser = new DefinitionsParser(this.definitions);
 		for (Class<?> configurationClass : getConfigurationClasses(beanFactory)) {
 			parser.parse(configurationClass);
@@ -177,11 +180,14 @@ public class MockitoPostProcessor extends InstantiationAwareBeanPostProcessorAda
 
 	private void registerMock(ConfigurableListableBeanFactory beanFactory,
 			BeanDefinitionRegistry registry, MockDefinition definition, Field field) {
-		RootBeanDefinition beanDefinition = createBeanDefinition(definition);
-		String beanName = getBeanName(beanFactory, registry, definition, beanDefinition);
-		beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(1,
-				beanName);
-		registry.registerBeanDefinition(beanName, beanDefinition);
+		String beanName = getBeanName(beanFactory, registry, definition,
+				createBeanDefinition(definition));
+		if (registry.containsBeanDefinition(beanName)) {
+			registry.removeBeanDefinition(beanName);
+		}
+		Object mock = createMock(definition, beanName);
+		beanFactory.registerSingleton(beanName, mock);
+		this.mockitoBeans.add(mock);
 		this.beanNameRegistry.put(definition, beanName);
 		if (field != null) {
 			this.fieldRegistry.put(field, new RegisteredField(definition, beanName));

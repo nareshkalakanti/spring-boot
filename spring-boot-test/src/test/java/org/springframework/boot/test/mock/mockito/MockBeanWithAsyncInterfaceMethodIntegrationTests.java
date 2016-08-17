@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,6 +71,7 @@ public class MockBeanWithAsyncInterfaceMethodIntegrationTests {
 	}
 
 	@Configuration
+	@EnableAsync
 	static class MyConfiguration {
 
 		@Bean

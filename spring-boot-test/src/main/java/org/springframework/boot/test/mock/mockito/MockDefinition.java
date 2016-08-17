@@ -49,13 +49,12 @@ class MockDefinition extends Definition {
 	private final boolean serializable;
 
 	MockDefinition(Class<?> classToMock) {
-		this(null, classToMock, null, null, false, null, true);
+		this(null, classToMock, null, null, false, null);
 	}
 
 	MockDefinition(String name, Class<?> classToMock, Class<?>[] extraInterfaces,
-			Answers answer, boolean serializable, MockReset reset,
-			boolean proxyTargetAware) {
-		super(name, reset, proxyTargetAware);
+			Answers answer, boolean serializable, MockReset reset) {
+		super(name, reset, false);
 		Assert.notNull(classToMock, "ClassToMock must not be null");
 		this.classToMock = classToMock;
 		this.extraInterfaces = asClassSet(extraInterfaces);
