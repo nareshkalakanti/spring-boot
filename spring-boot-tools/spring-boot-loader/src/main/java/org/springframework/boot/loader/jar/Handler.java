@@ -34,12 +34,15 @@ import java.util.logging.Logger;
  * {@link URLStreamHandler} for Spring Boot loader {@link JarFile}s.
  *
  * @author Phillip Webb
+ * @author Andy Wilkinson
  * @see JarFile#registerUrlProtocolHandler()
  */
 public class Handler extends URLStreamHandler {
 
 	// NOTE: in order to be found as a URL protocol handler, this class must be public,
 	// must be named Handler and must be in a package ending '.jar'
+
+	private static final String JAR_PROTOCOL = "jar:";
 
 	private static final String FILE_PROTOCOL = "file:";
 
@@ -92,6 +95,87 @@ public class Handler extends URLStreamHandler {
 		}
 		catch (Exception ex) {
 			return openFallbackConnection(url, ex);
+		}
+	}
+
+	@Override
+	protected void parseURL(URL context, String spec, int start, int limit) {
+		String file;
+		if (specUsesContext(spec)) {
+			file = getFileFromContext(context, spec.substring(start, limit));
+		}
+		else {
+			file = getFileFromSpec(spec.substring(start, limit));
+		}
+		setURL(context, JAR_PROTOCOL, null, -1, null, null, file, null, null);
+	}
+
+	@Override
+	protected boolean sameFile(URL url1, URL url2) {
+		if (!url1.getProtocol().equals("jar") || !url2.getProtocol().equals("jar")) {
+			return false;
+		}
+		int separatorIndex1 = url1.getFile().indexOf(SEPARATOR);
+		int separatorIndex2 = url2.getFile().indexOf(SEPARATOR);
+		if (separatorIndex1 >= 0 && separatorIndex2 >= 0) {
+			if (!url1.getFile().substring(separatorIndex1 + SEPARATOR.length()).equals(
+					url2.getFile().substring(separatorIndex2 + SEPARATOR.length()))) {
+				return false;
+			}
+			try {
+				return super.sameFile(
+						new URL(url1.getFile().substring(0, separatorIndex1)),
+						new URL(url2.getFile().substring(0, separatorIndex2)));
+			}
+			catch (MalformedURLException ex) {
+				// Continue
+			}
+		}
+		return super.sameFile(url1, url2);
+	}
+
+	protected String getFileFromContext(URL context, String spec) {
+		String file = context.getFile();
+		if (spec.startsWith("/")) {
+			return trimToJarRoot(file) + SEPARATOR + spec.substring(1);
+		}
+		if (!file.endsWith("/")) {
+			int lastSlashIndex = file.lastIndexOf('/');
+			if (lastSlashIndex == -1) {
+				throw new IllegalArgumentException(
+						"No / found in context URL's file '" + file + "'");
+			}
+			file = file.substring(0, lastSlashIndex + 1);
+		}
+		return file + spec;
+	}
+
+	private String trimToJarRoot(String file) {
+		int lastSeparatorIndex = file.lastIndexOf(SEPARATOR);
+		if (lastSeparatorIndex == -1) {
+			throw new IllegalArgumentException(
+					"No !/ found in context URL's file '" + file + "'");
+		}
+		return file.substring(0, lastSeparatorIndex);
+	}
+
+	private boolean specUsesContext(String spec) {
+		return !(spec.length() >= JAR_PROTOCOL.length() && spec
+				.substring(0, JAR_PROTOCOL.length()).equalsIgnoreCase(JAR_PROTOCOL));
+	}
+
+	private String getFileFromSpec(String spec) {
+		int separatorIndex = spec.lastIndexOf("!/");
+		if (separatorIndex == -1) {
+			throw new IllegalArgumentException("No !/ in spec '" + spec + "'");
+		}
+		try {
+			new URL(spec.substring(0, separatorIndex));
+			return spec;
+		}
+		catch (MalformedURLException ex) {
+			throw new IllegalArgumentException("Spec '" + spec + "' is an invalid URL",
+					ex);
 		}
 	}
 
