@@ -57,7 +57,7 @@ public class RestartServerTests {
 	}
 
 	@Test
-	public void updateAndRestart() throws Exception {
+	public void modifyAndRestart() throws Exception {
 		URL url1 = new URL("file:/proj/module-a.jar!/");
 		URL url2 = new URL("file:/proj/module-b.jar!/");
 		URL url3 = new URL("file:/proj/module-c.jar!/");
@@ -68,8 +68,8 @@ public class RestartServerTests {
 		SourceFolderUrlFilter filter = new DefaultSourceFolderUrlFilter();
 		MockRestartServer server = new MockRestartServer(filter, classLoaderB);
 		ClassLoaderFiles files = new ClassLoaderFiles();
-		ClassLoaderFile fileA = new ClassLoaderFile(Kind.ADDED, new byte[0]);
-		ClassLoaderFile fileB = new ClassLoaderFile(Kind.ADDED, new byte[0]);
+		ClassLoaderFile fileA = new ClassLoaderFile(Kind.MODIFIED, new byte[] { 1 });
+		ClassLoaderFile fileB = new ClassLoaderFile(Kind.MODIFIED, new byte[] { 2 });
 		files.addFile("my/module-a", "ClassA.class", fileA);
 		files.addFile("my/module-c", "ClassB.class", fileB);
 		server.updateAndRestart(files);
@@ -79,7 +79,7 @@ public class RestartServerTests {
 	}
 
 	@Test
-	public void updateSetsJarLastModified() throws Exception {
+	public void modifySetsJarLastModified() throws Exception {
 		long startTime = System.currentTimeMillis();
 		File folder = this.temp.newFolder();
 		File jarFile = new File(folder, "module-a.jar");
@@ -90,14 +90,14 @@ public class RestartServerTests {
 		SourceFolderUrlFilter filter = new DefaultSourceFolderUrlFilter();
 		MockRestartServer server = new MockRestartServer(filter, classLoader);
 		ClassLoaderFiles files = new ClassLoaderFiles();
-		ClassLoaderFile fileA = new ClassLoaderFile(Kind.ADDED, new byte[0]);
+		ClassLoaderFile fileA = new ClassLoaderFile(Kind.MODIFIED, new byte[0]);
 		files.addFile("my/module-a", "ClassA.class", fileA);
 		server.updateAndRestart(files);
 		assertThat(jarFile.lastModified()).isGreaterThan(startTime - 1000);
 	}
 
 	@Test
-	public void updateReplacesLocalFilesWhenPossible() throws Exception {
+	public void modifyReplacesLocalFilesWhenPossible() throws Exception {
 		// This is critical for Cloud Foundry support where the application is
 		// run exploded and resources can be found from the servlet root (outside of the
 		// classloader)
@@ -109,7 +109,7 @@ public class RestartServerTests {
 		SourceFolderUrlFilter filter = new DefaultSourceFolderUrlFilter();
 		MockRestartServer server = new MockRestartServer(filter, classLoader);
 		ClassLoaderFiles files = new ClassLoaderFiles();
-		ClassLoaderFile fileA = new ClassLoaderFile(Kind.ADDED, "def".getBytes());
+		ClassLoaderFile fileA = new ClassLoaderFile(Kind.MODIFIED, "def".getBytes());
 		files.addFile("my/module-a", "ClassA.class", fileA);
 		server.updateAndRestart(files);
 		assertThat(FileCopyUtils.copyToByteArray(classFile)).isEqualTo("def".getBytes());

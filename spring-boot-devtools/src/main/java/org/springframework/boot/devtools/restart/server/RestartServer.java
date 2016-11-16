@@ -17,12 +17,14 @@
 package org.springframework.boot.devtools.restart.server;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.jar.Manifest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -84,9 +86,19 @@ public class RestartServer {
 		Set<URL> classLoaderUrls = getClassLoaderUrls();
 		for (SourceFolder folder : files.getSourceFolders()) {
 			for (Entry<String, ClassLoaderFile> entry : folder.getFilesEntrySet()) {
-				for (URL url : classLoaderUrls) {
-					if (updateFileSystem(url, entry.getKey(), entry.getValue())) {
-						urls.add(url);
+				if (entry.getValue().getKind() == ClassLoaderFile.Kind.ADDED) {
+					URL url = findSpringBootClassesLocation(classLoaderUrls);
+					if (url != null) {
+						if (updateFileSystem(url, entry.getKey(), entry.getValue())) {
+							urls.add(url);
+						}
+					}
+				}
+				else {
+					for (URL url : classLoaderUrls) {
+						if (updateFileSystem(url, entry.getKey(), entry.getValue())) {
+							urls.add(url);
+						}
 					}
 				}
 			}
@@ -94,6 +106,58 @@ public class RestartServer {
 		}
 		updateTimeStamp(urls);
 		restart(urls, files);
+	}
+
+	private URL findSpringBootClassesLocation(Set<URL> classLoaderUrls) {
+		File manifestFile = new File("META-INF/MANIFEST.MF");
+		if (!manifestFile.isFile()) {
+			logger.warn("Failed to find classes location. Manifest '"
+					+ manifestFile.getAbsolutePath() + "' does not exist");
+			return null;
+		}
+		try {
+			Manifest manifest = readManifest(manifestFile);
+			String value = manifest.getMainAttributes().getValue("Spring-Boot-Classes");
+			if (value == null) {
+				logger.warn("Failed to find classes location. Manifest '"
+						+ manifestFile.getAbsolutePath()
+						+ "' does not contain a Spring-Boot-Classes attribute");
+				return null;
+			}
+			File springBootClasses = new File(value).getAbsoluteFile();
+			for (URL url : classLoaderUrls) {
+				if (isFolderUrl(url.toString())
+						&& ResourceUtils.getFile(url).equals(springBootClasses)) {
+					return url;
+				}
+			}
+			logger.warn("Failed to find classes location. '" + springBootClasses
+					+ "' is not on the class path");
+			return null;
+		}
+		catch (IOException ex) {
+			logger.warn("Failed to find classes location. Failed to read manifest '"
+					+ manifestFile.getAbsolutePath() + "'", ex);
+			return null;
+		}
+	}
+
+	private Manifest readManifest(File manifestFile) throws IOException {
+		FileInputStream input = null;
+		try {
+			input = new FileInputStream(manifestFile);
+			return new Manifest(input);
+		}
+		finally {
+			if (input != null) {
+				try {
+					input.close();
+				}
+				catch (IOException ex) {
+					// Continue
+				}
+			}
+		}
 	}
 
 	private boolean updateFileSystem(URL url, String name,
@@ -104,13 +168,18 @@ public class RestartServer {
 		try {
 			File folder = ResourceUtils.getFile(url);
 			File file = new File(folder, name);
-			if (file.exists() && file.canWrite()) {
-				if (classLoaderFile.getKind() == Kind.DELETED) {
-					return file.delete();
-				}
-				FileCopyUtils.copy(classLoaderFile.getContents(), file);
-				return true;
+			if (classLoaderFile.getKind() == Kind.DELETED) {
+				return file.delete();
 			}
+			if (classLoaderFile.getKind() == Kind.MODIFIED && !file.canWrite()) {
+				return false;
+			}
+			if (classLoaderFile.getKind() == Kind.ADDED
+					&& !file.getParentFile().exists()) {
+				file.getParentFile().mkdirs();
+			}
+			FileCopyUtils.copy(classLoaderFile.getContents(), file);
+			return true;
 		}
 		catch (IOException ex) {
 			// Ignore
