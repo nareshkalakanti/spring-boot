@@ -33,6 +33,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.Manifest;
 
 import org.springframework.boot.loader.data.RandomAccessData.ResourceAccess;
+import org.springframework.boot.loader.jar.Handler;
 import org.springframework.boot.loader.jar.JarFile;
 
 /**
@@ -100,6 +101,7 @@ public class JarFileArchive implements Archive {
 		if (jarEntry.getComment().startsWith(UNPACK_MARKER)) {
 			return getUnpackedNestedArchive(jarEntry);
 		}
+		Handler.addHiddenEntryPrefix(jarEntry.getName());
 		JarFile jarFile = this.jarFile.getNestedJarFile(jarEntry);
 		return new JarFileArchive(jarFile);
 	}

@@ -84,12 +84,28 @@ public class JarFile extends java.util.jar.JarFile {
 	}
 
 	/**
+	 * Create a new {@link JarFile} backed by the specified file that will apply the given
+	 * {@code filter} to its entries.
+	 *
+	 * @param file the root jar file
+	 * @param filter the filter
+	 * @throws IOException if the file cannot be read
+	 */
+	JarFile(File file, JarEntryFilter filter) throws IOException {
+		this(new RandomAccessDataFile(file), filter);
+	}
+
+	/**
 	 * Create a new {@link JarFile} backed by the specified file.
 	 * @param file the root jar file
 	 * @throws IOException if the file cannot be read
 	 */
 	JarFile(RandomAccessDataFile file) throws IOException {
 		this(file, "", file, JarFileType.DIRECT);
+	}
+
+	JarFile(RandomAccessDataFile file, JarEntryFilter filter) throws IOException {
+		this(file, "", file, filter, JarFileType.DIRECT);
 	}
 
 	/**

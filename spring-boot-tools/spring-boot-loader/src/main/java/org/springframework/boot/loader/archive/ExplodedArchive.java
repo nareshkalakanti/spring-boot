@@ -34,6 +34,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.jar.Manifest;
 
+import org.springframework.boot.loader.jar.Handler;
+
 /**
  * {@link Archive} implementation backed by an exploded archive directory.
  *
@@ -108,6 +110,7 @@ public class ExplodedArchive implements Archive {
 			if (filter.matches(entry)) {
 				nestedArchives.add(getNestedArchive(entry));
 			}
+			Handler.addHiddenEntryPrefix(entry.getName());
 		}
 		return Collections.unmodifiableList(nestedArchives);
 	}

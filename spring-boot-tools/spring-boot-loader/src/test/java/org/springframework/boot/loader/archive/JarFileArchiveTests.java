@@ -18,9 +18,11 @@ package org.springframework.boot.loader.archive;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,6 +30,8 @@ import org.junit.rules.TemporaryFolder;
 
 import org.springframework.boot.loader.TestJarCreator;
 import org.springframework.boot.loader.archive.Archive.Entry;
+import org.springframework.boot.loader.jar.Handler;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,6 +55,16 @@ public class JarFileArchiveTests {
 	@Before
 	public void setup() throws Exception {
 		setup(false);
+	}
+
+	@After
+	@SuppressWarnings("unchecked")
+	public void cleanUp() {
+		Object entryFilter = ReflectionTestUtils.getField(Handler.class,
+				"rootJarEntryFilter");
+		Collection<String> hiddenEntryPrefixes = (Collection<String>) ReflectionTestUtils
+				.getField(entryFilter, "hiddenEntryPrefixes");
+		hiddenEntryPrefixes.clear();
 	}
 
 	private void setup(boolean unpackNested) throws Exception {

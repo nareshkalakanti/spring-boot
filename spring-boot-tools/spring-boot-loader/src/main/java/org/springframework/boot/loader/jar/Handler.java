@@ -26,7 +26,9 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLStreamHandler;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,6 +54,8 @@ public class Handler extends URLStreamHandler {
 			"sun.net.www.protocol.jar.Handler" };
 
 	private static final Method OPEN_CONNECTION_METHOD;
+
+	private static final RootJarEntryFilter rootJarEntryFilter = new RootJarEntryFilter();
 
 	static {
 		Method method = null;
@@ -242,7 +246,7 @@ public class Handler extends URLStreamHandler {
 			Map<File, JarFile> cache = rootFileCache.get();
 			JarFile result = (cache == null ? null : cache.get(file));
 			if (result == null) {
-				result = new JarFile(file);
+				result = new JarFile(file, rootJarEntryFilter);
 				addToRootFileCache(file, result);
 			}
 			return result;
@@ -275,6 +279,36 @@ public class Handler extends URLStreamHandler {
 	public static void setUseFastConnectionExceptions(
 			boolean useFastConnectionExceptions) {
 		JarURLConnection.setUseFastExceptions(useFastConnectionExceptions);
+	}
+
+	/**
+	 * Add the given {@code hiddenEntryPrefix} to the {@code Handler}. Any entry with a
+	 * name that starts with the given prefix will be hidden from root {@link JarFile
+	 * JarFiles} accessed via this {@code Handler}.
+	 *
+	 * @param hiddenEntryPrefix the prefix
+	 */
+	public static void addHiddenEntryPrefix(String hiddenEntryPrefix) {
+		rootJarEntryFilter.addHiddenEntryPrefix(hiddenEntryPrefix);
+	}
+
+	private static class RootJarEntryFilter implements JarEntryFilter {
+
+		private final Set<AsciiBytes> hiddenEntryPrefixes = new CopyOnWriteArraySet<AsciiBytes>();
+
+		public void addHiddenEntryPrefix(String hiddenEntryPrefix) {
+			this.hiddenEntryPrefixes.add(new AsciiBytes(hiddenEntryPrefix));
+		}
+
+		@Override
+		public AsciiBytes apply(AsciiBytes name) {
+			for (AsciiBytes prefix : this.hiddenEntryPrefixes) {
+				if (name.startsWith(prefix)) {
+					return null;
+				}
+			}
+			return name;
+		}
 	}
 
 }
