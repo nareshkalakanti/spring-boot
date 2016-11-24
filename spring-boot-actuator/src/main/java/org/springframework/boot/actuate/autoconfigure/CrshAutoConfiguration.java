@@ -32,6 +32,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.crsh.auth.AuthenticationPlugin;
+import org.crsh.lang.impl.java.JavaLanguage;
 import org.crsh.plugin.CRaSHPlugin;
 import org.crsh.plugin.PluginContext;
 import org.crsh.plugin.PluginDiscovery;
@@ -52,6 +53,7 @@ import org.springframework.boot.actuate.autoconfigure.ShellProperties.JaasAuthen
 import org.springframework.boot.actuate.autoconfigure.ShellProperties.KeyAuthenticationProperties;
 import org.springframework.boot.actuate.autoconfigure.ShellProperties.SimpleAuthenticationProperties;
 import org.springframework.boot.actuate.autoconfigure.ShellProperties.SpringAuthenticationProperties;
+import org.springframework.boot.actuate.autoconfigure.crsh.SpringBootJavaLanguage;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -137,6 +139,11 @@ public class CrshAutoConfiguration {
 		CrshBootstrapBean bootstrapBean = new CrshBootstrapBean();
 		bootstrapBean.setConfig(this.properties.asCrshShellConfig());
 		return bootstrapBean;
+	}
+
+	@Bean
+	public SpringBootJavaLanguage springBootJavaLanguage() {
+		return new SpringBootJavaLanguage();
 	}
 
 	@Configuration
@@ -403,6 +410,10 @@ public class CrshAutoConfiguration {
 
 		protected boolean isEnabled(CRaSHPlugin<?> plugin) {
 			Assert.notNull(plugin, "Plugin must not be null");
+
+			if (JavaLanguage.class.equals(plugin.getClass())) {
+				return false;
+			}
 
 			if (ObjectUtils.isEmpty(this.disabledPlugins)) {
 				return true;
