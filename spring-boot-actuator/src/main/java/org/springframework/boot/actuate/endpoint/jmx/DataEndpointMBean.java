@@ -16,9 +16,8 @@
 
 package org.springframework.boot.actuate.endpoint.jmx;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.boot.actuate.endpoint.Endpoint;
+import org.springframework.boot.actuate.endpoint.EndpointPayloadConverter;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
@@ -36,11 +35,11 @@ public class DataEndpointMBean extends EndpointMBean {
 	 * Create a new {@link DataEndpointMBean} instance.
 	 * @param beanName the bean name
 	 * @param endpoint the endpoint to wrap
-	 * @param objectMapper the {@link ObjectMapper} used to convert the payload
+	 * @param jsonSerializer the {@link EndpointPayloadConverter} used to convert the payload
 	 */
 	public DataEndpointMBean(String beanName, Endpoint<?> endpoint,
-			ObjectMapper objectMapper) {
-		super(beanName, endpoint, objectMapper);
+			EndpointPayloadConverter jsonSerializer) {
+		super(beanName, endpoint, jsonSerializer);
 	}
 
 	@ManagedAttribute(description = "Invoke the underlying endpoint")

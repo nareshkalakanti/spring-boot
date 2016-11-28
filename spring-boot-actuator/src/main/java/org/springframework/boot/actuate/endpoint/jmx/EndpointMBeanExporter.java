@@ -27,7 +27,6 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -35,6 +34,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.boot.actuate.endpoint.Endpoint;
+import org.springframework.boot.actuate.endpoint.EndpointPayloadConverter;
 import org.springframework.boot.actuate.endpoint.ShutdownEndpoint;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -97,21 +97,14 @@ public class EndpointMBeanExporter extends MBeanExporter
 
 	private Properties objectNameStaticProperties = new Properties();
 
-	private final ObjectMapper objectMapper;
+	private final EndpointPayloadConverter jsonSerializer;
 
 	/**
 	 * Create a new {@link EndpointMBeanExporter} instance.
+	 * @param jsonSerializer the JSON serializer
 	 */
-	public EndpointMBeanExporter() {
-		this(null);
-	}
-
-	/**
-	 * Create a new {@link EndpointMBeanExporter} instance.
-	 * @param objectMapper the object mapper
-	 */
-	public EndpointMBeanExporter(ObjectMapper objectMapper) {
-		this.objectMapper = (objectMapper == null ? new ObjectMapper() : objectMapper);
+	public EndpointMBeanExporter(EndpointPayloadConverter jsonSerializer) {
+		this.jsonSerializer = jsonSerializer;
 		setAutodetect(false);
 		setNamingStrategy(this.defaultNamingStrategy);
 		setAssembler(this.assembler);
@@ -189,9 +182,9 @@ public class EndpointMBeanExporter extends MBeanExporter
 
 	protected EndpointMBean getEndpointMBean(String beanName, Endpoint<?> endpoint) {
 		if (endpoint instanceof ShutdownEndpoint) {
-			return new ShutdownEndpointMBean(beanName, endpoint, this.objectMapper);
+			return new ShutdownEndpointMBean(beanName, endpoint, this.jsonSerializer);
 		}
-		return new DataEndpointMBean(beanName, endpoint, this.objectMapper);
+		return new DataEndpointMBean(beanName, endpoint, this.jsonSerializer);
 	}
 
 	@Override

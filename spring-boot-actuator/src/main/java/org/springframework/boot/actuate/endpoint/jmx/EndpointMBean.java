@@ -17,12 +17,9 @@
 package org.springframework.boot.actuate.endpoint.jmx;
 
 import java.util.List;
-import java.util.Map;
-
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.boot.actuate.endpoint.Endpoint;
+import org.springframework.boot.actuate.endpoint.EndpointPayloadConverter;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.util.Assert;
@@ -39,29 +36,21 @@ public class EndpointMBean {
 
 	private final Endpoint<?> endpoint;
 
-	private final ObjectMapper mapper;
-
-	private final JavaType listObject;
-
-	private final JavaType mapStringObject;
+	private final EndpointPayloadConverter jsonSerializer;
 
 	/**
 	 * Create a new {@link EndpointMBean} instance.
 	 * @param beanName the bean name
 	 * @param endpoint the endpoint to wrap
-	 * @param objectMapper the {@link ObjectMapper} used to convert the payload
+	 * @param jsonSerializer the {@link EndpointPayloadConverter} used to convert the payload
 	 */
 	public EndpointMBean(String beanName, Endpoint<?> endpoint,
-			ObjectMapper objectMapper) {
+			EndpointPayloadConverter jsonSerializer) {
 		Assert.notNull(beanName, "BeanName must not be null");
 		Assert.notNull(endpoint, "Endpoint must not be null");
-		Assert.notNull(objectMapper, "ObjectMapper must not be null");
+		Assert.notNull(jsonSerializer, "ObjectMapper must not be null");
 		this.endpoint = endpoint;
-		this.mapper = objectMapper;
-		this.listObject = objectMapper.getTypeFactory()
-				.constructParametricType(List.class, Object.class);
-		this.mapStringObject = objectMapper.getTypeFactory()
-				.constructParametricType(Map.class, String.class, Object.class);
+		this.jsonSerializer = jsonSerializer;
 	}
 
 	@ManagedAttribute(description = "Returns the class of the underlying endpoint")
@@ -86,9 +75,9 @@ public class EndpointMBean {
 			return result;
 		}
 		if (result.getClass().isArray() || result instanceof List) {
-			return this.mapper.convertValue(result, this.listObject);
+			return this.jsonSerializer.convertToObjectList(result);
 		}
-		return this.mapper.convertValue(result, this.mapStringObject);
+		return this.jsonSerializer.convertToStringObjectMap(result);
 	}
 
 }

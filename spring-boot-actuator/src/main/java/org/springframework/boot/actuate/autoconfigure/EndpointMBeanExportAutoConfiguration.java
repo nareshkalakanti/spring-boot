@@ -19,17 +19,25 @@ package org.springframework.boot.actuate.autoconfigure;
 import javax.management.MBeanServer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.actuate.autoconfigure.EndpointMBeanExportAutoConfiguration.JmxEnabledCondition;
 import org.springframework.boot.actuate.endpoint.Endpoint;
+import org.springframework.boot.actuate.endpoint.EndpointPayloadConverter;
+import org.springframework.boot.actuate.endpoint.GsonEndpointPayloadConverter;
+import org.springframework.boot.actuate.endpoint.JacksonEndpointPayloadConverter;
 import org.springframework.boot.actuate.endpoint.jmx.EndpointMBeanExporter;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
+import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration;
 import org.springframework.boot.bind.RelaxedPropertyResolver;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -49,24 +57,23 @@ import org.springframework.util.StringUtils;
  */
 @Configuration
 @Conditional(JmxEnabledCondition.class)
-@AutoConfigureAfter({ EndpointAutoConfiguration.class, JmxAutoConfiguration.class })
+@AutoConfigureAfter({ EndpointAutoConfiguration.class, JmxAutoConfiguration.class,
+		JacksonAutoConfiguration.class, GsonAutoConfiguration.class })
 @EnableConfigurationProperties(EndpointMBeanExportProperties.class)
 public class EndpointMBeanExportAutoConfiguration {
 
 	private final EndpointMBeanExportProperties properties;
 
-	private final ObjectMapper objectMapper;
-
-	public EndpointMBeanExportAutoConfiguration(EndpointMBeanExportProperties properties,
-			ObjectProvider<ObjectMapper> objectMapperProvider) {
+	public EndpointMBeanExportAutoConfiguration(
+			EndpointMBeanExportProperties properties) {
 		this.properties = properties;
-		this.objectMapper = objectMapperProvider.getIfAvailable();
 	}
 
 	@Bean
-	public EndpointMBeanExporter endpointMBeanExporter(MBeanServer server) {
+	public EndpointMBeanExporter endpointMBeanExporter(MBeanServer server,
+			EndpointPayloadConverter endpointPayloadConverter) {
 		EndpointMBeanExporter mbeanExporter = new EndpointMBeanExporter(
-				this.objectMapper);
+				endpointPayloadConverter);
 		String domain = this.properties.getDomain();
 		if (StringUtils.hasText(domain)) {
 			mbeanExporter.setDomain(domain);
@@ -81,6 +88,35 @@ public class EndpointMBeanExportAutoConfiguration {
 	@ConditionalOnMissingBean(MBeanServer.class)
 	public MBeanServer mbeanServer() {
 		return new JmxAutoConfiguration().mbeanServer();
+	}
+
+	@Configuration
+	static class EndpointPayloadConverterConfiguration {
+
+		@ConditionalOnClass(ObjectMapper.class)
+		static class JacksonEndpointPayloadConverterConfiguration {
+
+			@Bean
+			public JacksonEndpointPayloadConverter jacksonEndpointPayloadConverter(
+					ObjectProvider<ObjectMapper> objectMapperProvider) {
+				ObjectMapper objectMapper = objectMapperProvider.getIfAvailable();
+				return new JacksonEndpointPayloadConverter(
+						objectMapper == null ? new ObjectMapper() : objectMapper);
+			}
+
+		}
+
+		@ConditionalOnClass(Gson.class)
+		@ConditionalOnBean(Gson.class)
+		static class GsonEndpointPayloadConverterConfiguration {
+
+			@Bean
+			public GsonEndpointPayloadConverter gsonEndpointPayloadConverter(Gson gson) {
+				return new GsonEndpointPayloadConverter(gson);
+			}
+
+		}
+
 	}
 
 	/**

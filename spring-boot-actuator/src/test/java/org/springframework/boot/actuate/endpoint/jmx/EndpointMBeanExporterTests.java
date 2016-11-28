@@ -36,8 +36,10 @@ import org.junit.Test;
 
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.boot.actuate.endpoint.AbstractEndpoint;
+import org.springframework.boot.actuate.endpoint.JacksonEndpointPayloadConverter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.jmx.export.MBeanExporter;
@@ -241,7 +243,10 @@ public class EndpointMBeanExporterTests {
 	public void jsonListConversion() throws Exception {
 		this.context = new GenericApplicationContext();
 		this.context.registerBeanDefinition("endpointMbeanExporter",
-				new RootBeanDefinition(EndpointMBeanExporter.class));
+				BeanDefinitionBuilder.rootBeanDefinition(EndpointMBeanExporter.class)
+						.addConstructorArgValue(
+								new JacksonEndpointPayloadConverter(new ObjectMapper()))
+				.getBeanDefinition());
 		this.context.registerBeanDefinition("endpoint1",
 				new RootBeanDefinition(JsonListConversionEndpoint.class));
 		this.context.refresh();
