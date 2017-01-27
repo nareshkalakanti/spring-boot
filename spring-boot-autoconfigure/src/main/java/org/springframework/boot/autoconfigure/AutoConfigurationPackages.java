@@ -18,6 +18,7 @@ package org.springframework.boot.autoconfigure;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.boot.context.annotation.DeterminableImportBeanDefinitionRegistrar;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -122,12 +124,18 @@ public abstract class AutoConfigurationPackages {
 	 * configuration.
 	 */
 	@Order(Ordered.HIGHEST_PRECEDENCE)
-	static class Registrar implements ImportBeanDefinitionRegistrar {
+	static class Registrar implements DeterminableImportBeanDefinitionRegistrar {
 
 		@Override
 		public void registerBeanDefinitions(AnnotationMetadata metadata,
 				BeanDefinitionRegistry registry) {
 			register(registry, ClassUtils.getPackageName(metadata.getClassName()));
+		}
+
+		@Override
+		public Set<String> cacheKeyComponents(AnnotationMetadata metadata) {
+			return Collections
+					.singleton(ClassUtils.getPackageName(metadata.getClassName()));
 		}
 
 	}

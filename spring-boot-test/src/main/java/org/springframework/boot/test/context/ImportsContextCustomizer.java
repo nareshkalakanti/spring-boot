@@ -33,6 +33,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.boot.context.annotation.DeterminableImportBeanDefinitionRegistrar;
 import org.springframework.boot.context.annotation.DeterminableImportSelector;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -309,9 +310,16 @@ class ImportsContextCustomizer implements ContextCustomizer {
 		private Set<String> getSourceImports(AnnotationMetadata metadata,
 				Class<?> source) {
 			if (DeterminableImportSelector.class.isAssignableFrom(source)) {
-				DeterminableImportSelector selector = instantiate(source);
+				DeterminableImportSelector selector = (DeterminableImportSelector) instantiate(
+						source);
 				// We can determine the imports
 				return selector.determineImports(metadata);
+			}
+			if (DeterminableImportBeanDefinitionRegistrar.class
+					.isAssignableFrom(source)) {
+				DeterminableImportBeanDefinitionRegistrar registrar = (DeterminableImportBeanDefinitionRegistrar) instantiate(
+						source);
+				return registrar.cacheKeyComponents(metadata);
 			}
 			if (ImportSelector.class.isAssignableFrom(source)
 					|| ImportBeanDefinitionRegistrar.class.isAssignableFrom(source)) {
@@ -323,11 +331,12 @@ class ImportsContextCustomizer implements ContextCustomizer {
 			return Collections.singleton(source.getName());
 		}
 
-		private DeterminableImportSelector instantiate(Class<?> source) {
+		@SuppressWarnings("unchecked")
+		private <T> T instantiate(Class<T> source) {
 			try {
 				Constructor<?> constructor = source.getDeclaredConstructor();
 				ReflectionUtils.makeAccessible(constructor);
-				return (DeterminableImportSelector) source.newInstance();
+				return (T) constructor.newInstance();
 			}
 			catch (Throwable ex) {
 				throw new IllegalStateException(
