@@ -14,4 +14,4 @@ jobs:
     - get: git-spring-boot-build
       trigger: true
     - task: build
-      file: spring-boot/config/ci/spring-boot-build.yml
+      file: git-spring-boot-build/config/ci/spring-boot-build.yml
