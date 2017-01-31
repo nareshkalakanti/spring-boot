@@ -5,7 +5,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-parent</artifactId>
 		<version>2.0.0.BUILD-SNAPSHOT</version>
-		<relativePath>../spring-boot-parent</relativePath>
+		<relativePath/>
 	</parent>
 	<artifactId>spring-boot-deployment-tests</artifactId>
 	<packaging>pom</packaging>
@@ -17,7 +17,7 @@
 		<url>http://www.spring.io</url>
 	</organization>
 	<properties>
-		<main.basedir>${basedir}/..</main.basedir>
+		<config.dir>${basedir}/../config</config.dir>
 		<java.version>1.7</java.version>
 		<cargo.timeout>300000</cargo.timeout>
 		<cargo.container.download-dir>${java.io.tmpdir}/cargo/installs</cargo.container.download-dir>

@@ -16,11 +16,9 @@
 		<url>http://www.spring.io</url>
 	</organization>
 	<properties>
-		<main.basedir>${basedir}/../..</main.basedir>
+		<config.dir>${basedir}/../../config</config.dir>
 		<cargo.container.id>tomcat8x</cargo.container.id>
-		<cargo.container.url>
-			http://central.maven.org/maven2/org/apache/tomcat/tomcat/${tomcat.version}/tomcat-${tomcat.version}.zip
-		</cargo.container.url>
+		<cargo.container.url>http://central.maven.org/maven2/org/apache/tomcat/tomcat/${tomcat.version}/tomcat-${tomcat.version}.zip</cargo.container.url>
 	</properties>
 	<dependencies>
 		<dependency>

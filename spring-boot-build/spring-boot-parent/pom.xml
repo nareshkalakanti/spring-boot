@@ -18,13 +18,13 @@
 		<url>http://www.spring.io</url>
 	</organization>
 	<properties>
-		<main.basedir>..</main.basedir>
 		<disable.checks>false</disable.checks>
 		<java.version>1.8</java.version>
 		<aether.version>1.0.2.v20150114</aether.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.version>3.1.1</maven.version>
+		<config.dir>${basedir}/../../config</config.dir>
 	</properties>
 	<scm>
 		<url>http://github.com/spring-projects/spring-boot</url>
@@ -493,9 +493,9 @@
 						<phase>validate</phase>
 						<configuration>
 							<skip>${disable.checks}</skip>
-							<configLocation>src/checkstyle/checkstyle.xml</configLocation>
-							<suppressionsLocation>src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
-							<headerLocation>src/checkstyle/checkstyle-header.txt</headerLocation>
+							<configLocation>${config.dir}/checkstyle/checkstyle.xml</configLocation>
+							<suppressionsLocation>${config.dir}/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
+							<headerLocation>${config.dir}/checkstyle/checkstyle-header.txt</headerLocation>
 							<propertyExpansion>checkstyle.build.directory=${project.build.directory}</propertyExpansion>
 							<encoding>UTF-8</encoding>
 							<consoleOutput>true</consoleOutput>
@@ -524,11 +524,11 @@
 					<additionalConfig>
 						<file>
 							<name>.settings/org.eclipse.jdt.ui.prefs</name>
-							<location>${main.basedir}/eclipse/org.eclipse.jdt.ui.prefs</location>
+							<location>${config.dir}/eclipse/org.eclipse.jdt.ui.prefs</location>
 						</file>
 						<file>
 							<name>.settings/org.eclipse.jdt.core.prefs</name>
-							<location>${main.basedir}/eclipse/org.eclipse.jdt.core.prefs</location>
+							<location>${config.dir}/eclipse/org.eclipse.jdt.core.prefs</location>
 						</file>
 					</additionalConfig>
 				</configuration>
@@ -548,7 +548,7 @@
 									<version>[1.8,)</version>
 								</requireJavaVersion>
 								<requireProperty>
-									<property>main.basedir</property>
+									<property>config.dir</property>
 								</requireProperty>
 								<requireProperty>
 									<property>project.organization.name</property>

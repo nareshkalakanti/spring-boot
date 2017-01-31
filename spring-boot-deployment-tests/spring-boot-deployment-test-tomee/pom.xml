@@ -16,12 +16,10 @@
 		<url>http://www.spring.io</url>
 	</organization>
 	<properties>
-		<main.basedir>${basedir}/../..</main.basedir>
+		<config.dir>${basedir}/../../config</config.dir>
 		<tomee.version>7.0.2</tomee.version>
 		<cargo.container.id>tomee1x</cargo.container.id>
-		<cargo.container.url>
-			https://archive.apache.org/dist/tomee/tomee-${tomee.version}/apache-tomee-${tomee.version}-webprofile.zip
-		</cargo.container.url>
+		<cargo.container.url>https://archive.apache.org/dist/tomee/tomee-${tomee.version}/apache-tomee-${tomee.version}-webprofile.zip</cargo.container.url>
 	</properties>
 	<dependencies>
 		<dependency>

@@ -16,7 +16,7 @@
 		<url>http://www.spring.io</url>
 	</organization>
 	<properties>
-		<main.basedir>${basedir}/../..</main.basedir>
+		<config.dir>${basedir}/../../config</config.dir>
 		<glassfish.version>4.1.1</glassfish.version>
 		<cargo.container.id>glassfish4x</cargo.container.id>
 		<cargo.container.url>http://download.oracle.com/glassfish/${glassfish.version}/release/glassfish-${glassfish.version}.zip</cargo.container.url>

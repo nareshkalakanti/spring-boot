@@ -16,7 +16,7 @@
 	</organization>
 
 	<properties>
-		<main.basedir>${basedir}/../..</main.basedir>
+		<config.dir>${basedir}/../../config</config.dir>
 	</properties>
 	<dependencies>
 		<!-- Must never have compile/runtime time dependencies -->

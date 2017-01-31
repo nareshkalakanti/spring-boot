@@ -5,7 +5,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-parent</artifactId>
 		<version>2.0.0.BUILD-SNAPSHOT</version>
-		<relativePath>../spring-boot-parent</relativePath>
+		<relativePath/>
 	</parent>
 	<artifactId>spring-boot-cli</artifactId>
 	<name>Spring Boot CLI</name>
@@ -16,7 +16,7 @@
 		<url>http://www.spring.io</url>
 	</organization>
 	<properties>
-		<main.basedir>${basedir}/..</main.basedir>
+		<config.dir>${basedir}/../config</config.dir>
 		<start-class>org.springframework.boot.cli.SpringCli</start-class>
 		<spring.profiles.active>default</spring.profiles.active>
 		<generated.pom.dir>${project.build.directory}/generated-resources/org/springframework/boot/cli/compiler/dependencies</generated.pom.dir>

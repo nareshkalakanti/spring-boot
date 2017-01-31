@@ -16,11 +16,10 @@
 		<url>http://www.spring.io</url>
 	</organization>
 	<properties>
-		<main.basedir>${basedir}/../..</main.basedir>
+		<config.dir>${basedir}/../../config</config.dir>
 		<wildfly.version>8.2.0.Final</wildfly.version>
 		<cargo.container.id>wildfly8x</cargo.container.id>
-		<cargo.container.url>http://download.jboss.org/wildfly/${wildfly.version}/wildfly-${wildfly.version}.zip
-		</cargo.container.url>
+		<cargo.container.url>http://download.jboss.org/wildfly/${wildfly.version}/wildfly-${wildfly.version}.zip</cargo.container.url>
 	</properties>
 	<dependencies>
 		<dependency>
