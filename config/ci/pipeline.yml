@@ -1,17 +1,49 @@
 resources:
-  - name: git-spring-boot-build
+  - name: source
     type: git
     source:
       uri: https://github.com/wilkinsona/spring-boot
       branch: build-restructure
-      paths:
-        - spring-boot-build
-        - config/ci
 jobs:
-  - name: build-spring-boot-build
+  - name: spring-boot-build
     public: true
     plan:
-    - get: git-spring-boot-build
+    - get: source
+      trigger: true
+      params:
+        source:
+          paths:
+            - spring-boot-build
+            - config/ci
+    - task: build
+      file: source/config/ci/spring-boot-build.yml
+  - name: spring-boot-tools
+    public: true
+    plan:
+    - get: source
+      trigger: true
+      params:
+        source:
+          paths:
+            - spring-boot-tools
+            - config/ci
+      passed:
+        - spring-boot-build
       trigger: true
     - task: build
-      file: git-spring-boot-build/config/ci/spring-boot-build.yml
+      file: source/config/ci/spring-boot-tools.yml
+  - name: spring-boot-core
+    public: true
+    plan:
+    - get: source
+      trigger: true
+      params:
+        source:
+          paths:
+            - spring-boot-core
+            - config/ci
+      passed:
+        - spring-boot-tools
+      trigger: true
+    - task: build
+      file: source/config/ci/spring-boot-core.yml

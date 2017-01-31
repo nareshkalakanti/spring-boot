@@ -2,5 +2,5 @@
 
 set -e
 
-cd source/spring-boot-build
+cd source/spring-boot-core
 ./mvnw install
