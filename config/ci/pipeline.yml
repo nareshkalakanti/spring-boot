@@ -1,0 +1,15 @@
+resources:
+  - name: git-spring-boot-build
+    type: git
+    source:
+      uri: https://github.com/wilkinsona/spring-boot
+      branch: build-restructure
+      paths: spring-boot-build/*
+jobs:
+  - name: build-spring-boot-build
+    public: true
+    plan:
+    - get: git-spring-boot-build
+      trigger: true
+    - task: build
+      file: spring-boot/config/ci/spring-boot-build.yml
