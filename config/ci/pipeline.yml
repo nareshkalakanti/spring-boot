@@ -17,6 +17,9 @@ jobs:
             - config/ci
     - task: build
       file: source/config/ci/spring-boot-build.yml
+      params:
+      - DEPLOY_USERNAME: {{deploy_username}}
+      - DEPLOY_PASSWORD: {{deploy_password}}
   - name: spring-boot-tools
     public: true
     plan:

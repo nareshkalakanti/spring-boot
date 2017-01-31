@@ -3,4 +3,4 @@
 set -e
 
 cd source/spring-boot-build
-./mvnw install
+./mvnw deploy
