@@ -6,6 +6,7 @@ resources:
       branch: build-restructure
       paths:
         - spring-boot-build/*
+        - config/ci/*
 jobs:
   - name: build-spring-boot-build
     public: true
