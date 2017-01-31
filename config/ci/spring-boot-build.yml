@@ -11,4 +11,4 @@ inputs:
   - name: git-spring-boot-build
 
 run:
-  path: spring-boot/config/ci/spring-boot-build.sh
+  path: git-spring-boot-build/config/ci/spring-boot-build.sh
