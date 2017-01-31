@@ -4,7 +4,8 @@ resources:
     source:
       uri: https://github.com/wilkinsona/spring-boot
       branch: build-restructure
-      paths: spring-boot-build/*
+      paths:
+        - spring-boot-build/*
 jobs:
   - name: build-spring-boot-build
     public: true

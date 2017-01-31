@@ -8,7 +8,7 @@ image_resource:
     tag: 8-jdk
 
 inputs:
-  - name: spring-boot
+  - name: git-spring-boot-build
 
 run:
   path: spring-boot/config/ci/spring-boot-build.sh
