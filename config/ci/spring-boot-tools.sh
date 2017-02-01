@@ -3,4 +3,4 @@
 set -e
 
 cd source-spring-boot-tools/spring-boot-tools
-./mvnw install
+./mvnw deploy
