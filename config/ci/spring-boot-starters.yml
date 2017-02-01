@@ -11,4 +11,4 @@ inputs:
   - name: source
 
 run:
-  path: source/config/ci/spring-boot-core.sh
+  path: source/config/ci/spring-boot-starters.sh

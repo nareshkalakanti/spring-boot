@@ -1,70 +1,77 @@
 resources:
-  - name: source-spring-boot-build
+  - name: source
     type: git
     source:
       uri: https://github.com/wilkinsona/spring-boot
       branch: build-restructure
-      paths:
-        - spring-boot-build
-        - config/ci
-  - name: source-spring-boot-tools
-    type: git
-    source:
-      uri: https://github.com/wilkinsona/spring-boot
-      branch: build-restructure
-      paths:
-        - spring-boot-tools
-        - config/ci
-  - name: source-spring-boot-core
-    type: git
-    source:
-      uri: https://github.com/wilkinsona/spring-boot
-      branch: build-restructure
-      paths:
-        - spring-boot-core
-        - config/ci
 jobs:
   - name: spring-boot-build
     public: true
     plan:
-    - get: source-spring-boot-build
+    - get: source
       trigger: true
     - task: build
-      file: source-spring-boot-build/config/ci/spring-boot-build.yml
+      file: source/config/ci/spring-boot-build.yml
       params:
       - DEPLOY_USERNAME: {{deploy_username}}
       - DEPLOY_PASSWORD: {{deploy_password}}
   - name: spring-boot-tools
     public: true
     plan:
-    - aggregate:
-      - get: source-spring-boot-tools
-        trigger: true
-      - get: source-spring-boot-build
-        trigger: true
-        passed:
-          - spring-boot-build
+    - get: source
+      trigger: true
+      passed:
+        - spring-boot-build
     - task: build
-      file: source-spring-boot-tools/config/ci/spring-boot-tools.yml
+      file: source/config/ci/spring-boot-tools.yml
       params:
       - DEPLOY_USERNAME: {{deploy_username}}
       - DEPLOY_PASSWORD: {{deploy_password}}
   - name: spring-boot-core
     public: true
     plan:
-    - aggregate:
-      - get: source-spring-boot-core
-        trigger: true
-      - get: source-spring-boot-tools
-        trigger: true
-        passed:
-        - spring-boot-tools
-      - get: source-spring-boot-build
-        trigger: true
-        passed:
-        - spring-boot-build
+    - get: source
+      trigger: true
+      passed:
+      - spring-boot-tools
     - task: build
-      file: source-spring-boot-core/config/ci/spring-boot-core.yml
+      file: source/config/ci/spring-boot-core.yml
+      params:
+      - DEPLOY_USERNAME: {{deploy_username}}
+      - DEPLOY_PASSWORD: {{deploy_password}}
+  - name: spring-boot-starters
+    public: true
+    plan:
+    - get: source
+      trigger: true
+      passed:
+      - spring-boot-core
+    - task: build
+      file: source/config/ci/spring-boot-starters.yml
+      params:
+      - DEPLOY_USERNAME: {{deploy_username}}
+      - DEPLOY_PASSWORD: {{deploy_password}}
+  - name: spring-boot-docs
+    public: true
+    plan:
+    - get: source
+      trigger: true
+      passed:
+      - spring-boot-starters
+    - task: build
+      file: source/config/ci/spring-boot-docs.yml
+      params:
+      - DEPLOY_USERNAME: {{deploy_username}}
+      - DEPLOY_PASSWORD: {{deploy_password}}
+  - name: spring-boot-cli
+    public: true
+    plan:
+    - get: source
+      trigger: true
+      passed:
+      - spring-boot-starters
+    - task: build
+      file: source/config/ci/spring-boot-cli.yml
       params:
       - DEPLOY_USERNAME: {{deploy_username}}
       - DEPLOY_PASSWORD: {{deploy_password}}

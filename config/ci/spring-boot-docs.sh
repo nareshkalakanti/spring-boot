@@ -2,5 +2,5 @@
 
 set -e
 
-cd source/spring-boot-tools
+cd source/spring-boot-docs
 ./mvnw deploy

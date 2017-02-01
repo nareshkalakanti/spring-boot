@@ -8,7 +8,7 @@ image_resource:
     tag: 8-jdk
 
 inputs:
-  - name: source-spring-boot-tools
+  - name: source
 
 run:
-  path: source-spring-boot-tools/config/ci/spring-boot-tools.sh
+  path: source/config/ci/spring-boot-tools.sh
