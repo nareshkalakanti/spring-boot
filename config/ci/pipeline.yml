@@ -30,7 +30,7 @@ jobs:
     - get: source-spring-boot-build
       trigger: true
     - task: build
-      file: source/config/ci/spring-boot-build.yml
+      file: source-spring-boot-build/config/ci/spring-boot-build.yml
       params:
       - DEPLOY_USERNAME: {{deploy_username}}
       - DEPLOY_PASSWORD: {{deploy_password}}
@@ -45,7 +45,7 @@ jobs:
         passed:
           - spring-boot-build
     - task: build
-      file: source/config/ci/spring-boot-tools.yml
+      file: source-spring-boot-tools/config/ci/spring-boot-tools.yml
       params:
       - DEPLOY_USERNAME: {{deploy_username}}
       - DEPLOY_PASSWORD: {{deploy_password}}
@@ -64,7 +64,7 @@ jobs:
         passed:
         - spring-boot-build
     - task: build
-      file: source/config/ci/spring-boot-core.yml
+      file: source-spring-boot-core/config/ci/spring-boot-core.yml
       params:
       - DEPLOY_USERNAME: {{deploy_username}}
       - DEPLOY_PASSWORD: {{deploy_password}}
