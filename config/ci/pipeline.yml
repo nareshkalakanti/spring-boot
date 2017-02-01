@@ -1,20 +1,34 @@
 resources:
-  - name: source
+  - name: source-spring-boot-build
     type: git
     source:
       uri: https://github.com/wilkinsona/spring-boot
       branch: build-restructure
+      paths:
+        - spring-boot-build
+        - config/ci
+  - name: source-spring-boot-tools
+    type: git
+    source:
+      uri: https://github.com/wilkinsona/spring-boot
+      branch: build-restructure
+      paths:
+        - spring-boot-tools
+        - config/ci
+  - name: source-spring-boot-core
+    type: git
+    source:
+      uri: https://github.com/wilkinsona/spring-boot
+      branch: build-restructure
+      paths:
+        - spring-boot-core
+        - config/ci
 jobs:
   - name: spring-boot-build
     public: true
     plan:
-    - get: source
+    - get: source-spring-boot-build
       trigger: true
-      params:
-        source:
-          paths:
-            - spring-boot-build
-            - config/ci
     - task: build
       file: source/config/ci/spring-boot-build.yml
       params:
@@ -23,30 +37,34 @@ jobs:
   - name: spring-boot-tools
     public: true
     plan:
-    - get: source
-      trigger: true
-      params:
-        source:
-          paths:
-            - spring-boot-tools
-            - config/ci
-      passed:
-        - spring-boot-build
-      trigger: true
+    - aggregate:
+      - get: source-spring-boot-tools
+        trigger: true
+      - get: source-spring-boot-build
+        trigger: true
+        passed:
+          - spring-boot-build
     - task: build
       file: source/config/ci/spring-boot-tools.yml
+      params:
+      - DEPLOY_USERNAME: {{deploy_username}}
+      - DEPLOY_PASSWORD: {{deploy_password}}
   - name: spring-boot-core
     public: true
     plan:
-    - get: source
-      trigger: true
-      params:
-        source:
-          paths:
-            - spring-boot-core
-            - config/ci
-      passed:
+    - aggregate:
+      - get: source-spring-boot-core
+        trigger: true
+      - get: source-spring-boot-tools
+        trigger: true
+        passed:
         - spring-boot-tools
-      trigger: true
+      - get: source-spring-boot-build
+        trigger: true
+        passed:
+        - spring-boot-build
     - task: build
       file: source/config/ci/spring-boot-core.yml
+      params:
+      - DEPLOY_USERNAME: {{deploy_username}}
+      - DEPLOY_PASSWORD: {{deploy_password}}
