@@ -92,8 +92,10 @@ public class ResourceServerTokenServicesConfigurationTests {
 
 	@Test
 	public void defaultIsRemoteTokenServices() {
+		EnvironmentTestUtils.addEnvironment(this.environment,
+				"security.oauth2.resource.tokenInfoUri:http://example.com");
 		this.context = new SpringApplicationBuilder(ResourceConfiguration.class)
-				.web(false).run();
+				.environment(this.environment).web(false).run();
 		RemoteTokenServices services = this.context.getBean(RemoteTokenServices.class);
 		assertThat(services).isNotNull();
 	}
