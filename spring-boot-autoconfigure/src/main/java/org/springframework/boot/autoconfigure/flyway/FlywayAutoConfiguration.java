@@ -39,7 +39,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.data.jpa.EntityManagerFactoryDependsOnPostProcessor;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jdbc.DatabaseDriver;
@@ -134,13 +133,13 @@ public class FlywayAutoConfiguration {
 		}
 
 		@Bean
-		@ConfigurationProperties(prefix = "flyway")
 		public Flyway flyway() {
 			Flyway flyway = new SpringBootFlyway();
 			if (this.properties.isCreateDataSource()) {
 				flyway.setDataSource(this.properties.getUrl(), this.properties.getUser(),
 						this.properties.getPassword(),
-						this.properties.getInitSqls().toArray(new String[0]));
+						this.properties.getInitSqls().toArray(
+								new String[this.properties.getInitSqls().size()]));
 			}
 			else if (this.flywayDataSource != null) {
 				flyway.setDataSource(this.flywayDataSource);
@@ -150,7 +149,7 @@ public class FlywayAutoConfiguration {
 			}
 			flyway.setCallbacks(this.flywayCallbacks
 					.toArray(new FlywayCallback[this.flywayCallbacks.size()]));
-			flyway.setLocations(this.properties.getLocations().toArray(new String[0]));
+			this.properties.apply(flyway);
 			return flyway;
 		}
 

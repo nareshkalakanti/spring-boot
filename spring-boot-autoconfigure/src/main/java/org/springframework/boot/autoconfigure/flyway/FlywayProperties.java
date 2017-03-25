@@ -18,7 +18,10 @@ package org.springframework.boot.autoconfigure.flyway;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import org.flywaydb.core.Flyway;
 
@@ -37,11 +40,24 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class FlywayProperties {
 
 	/**
-	 * Locations of migrations scripts. Can contain the special "{vendor}" placeholder to
-	 * use vendor-specific locations.
+	 * Allow transactional and non-transactional statements in the same migration.
 	 */
-	private List<String> locations = new ArrayList<>(
-			Collections.singletonList("db/migration"));
+	private Boolean allowMixedMigrations;
+
+	/**
+	 * The description with which a schema is tagged when applying a baseline.
+	 */
+	private String baselineDescription;
+
+	/**
+	 * Automatically call baseline when migrating a non-empty schema.
+	 */
+	private Boolean baselineOnMigrate;
+
+	/**
+	 * The version with which a scheme is tagged when applying a baseline.
+	 */
+	private String baselineVersion;
 
 	/**
 	 * Check that migration scripts location exists.
@@ -49,19 +65,127 @@ public class FlywayProperties {
 	private boolean checkLocation = false;
 
 	/**
+	 * Disables cleaning of the database.
+	 */
+	private Boolean cleanDisabled;
+
+	/**
+	 * Automatically call clean on a validation error.
+	 */
+	private Boolean cleanOnValidationError;
+
+	/**
 	 * Enable flyway.
 	 */
 	private boolean enabled = true;
 
 	/**
-	 * Login user of the database to migrate.
+	 * Encoding of SQL migrations.
 	 */
-	private String user;
+	private String encoding;
+
+	/**
+	 * Ignore future migrations.
+	 */
+	private Boolean ignoreFutureMigrations;
+
+	/**
+	 * Ignore missing migrations.
+	 */
+	private Boolean ignoreMissingMigrations;
+
+	/**
+	 * SQL statements to execute to initialize a connection immediately after obtaining
+	 * it.
+	 */
+	private List<String> initSqls = new ArrayList<String>();
+
+	/**
+	 * Username recorded in the metadata table for the applied migrations.
+	 */
+	private String installedBy;
+
+	/**
+	 * Locations of migrations scripts. Can contain the special "{vendor}" placeholder to
+	 * use vendor-specific locations.
+	 */
+	private List<String> locations = new ArrayList<>(
+			Collections.singletonList("db/migration"));
+
+	/**
+	 * Allow migrations to be run out of order.
+	 */
+	private Boolean outOfOrder;
 
 	/**
 	 * Login password of the database to migrate.
 	 */
 	private String password;
+
+	/**
+	 * Prefix of placeholders in migration scripts.
+	 */
+	private String placeholderPrefix;
+
+	/**
+	 * Perform placeholder replacement in migration scripts.
+	 */
+	private Boolean placeholderReplacement;
+
+	/**
+	 * Suffix of placeholders in migration scripts.
+	 */
+	private String placeholderSuffix;
+
+	/**
+	 * Placeholders and their replacements.
+	 */
+	private Map<String, String> placeholders = new HashMap<String, String>();
+
+	/**
+	 * File name prefix for repeatable SQL migrations.
+	 */
+	private String repeatableSqlMigrationPrefix;
+
+	/**
+	 * Scheme names managed by Flyway (case-sensitive).
+	 */
+	private List<String> schemas;
+
+	/**
+	 * Skip default callbacks.
+	 */
+	private Boolean skipDefaultCallbacks;
+
+	/**
+	 * Skip default resolvers;
+	 */
+	private Boolean skipDefaultResolvers;
+
+	/**
+	 * File name prefix for SQL migrations.
+	 */
+	private String sqlMigrationPrefix;
+
+	/**
+	 * File name separator for SQL migrations.
+	 */
+	private String sqlMigrationSeparator;
+
+	/**
+	 * File name suffix for SQL migrations.
+	 */
+	private String sqlMigrationSuffix;
+
+	/**
+	 * Name of the schema metadata table that will be used by Flyway.
+	 */
+	private String table;
+
+	/**
+	 * Target version up to which migrations should be considered.
+	 */
+	private String target;
 
 	/**
 	 * JDBC url of the database to migrate. If not set, the primary configured data source
@@ -70,25 +194,73 @@ public class FlywayProperties {
 	private String url;
 
 	/**
-	 * SQL statements to execute to initialize a connection immediately after obtaining
-	 * it.
+	 * Login user of the database to migrate.
 	 */
-	private List<String> initSqls = new ArrayList<String>();
+	private String user;
 
-	public void setLocations(List<String> locations) {
-		this.locations = locations;
+	/**
+	 * Automatically call validate when performing a migration.
+	 */
+	private Boolean validateOnMigrate;
+
+	public Boolean getAllowMixedMigrations() {
+		return this.allowMixedMigrations;
 	}
 
-	public List<String> getLocations() {
-		return this.locations;
+	public void setAllowMixedMigrations(Boolean allowMixedMigrations) {
+		this.allowMixedMigrations = allowMixedMigrations;
+	}
+
+	public String getBaselineDescription() {
+		return this.baselineDescription;
+	}
+
+	public void setBaselineDescription(String baselineDescription) {
+		this.baselineDescription = baselineDescription;
+	}
+
+	public Boolean getBaselineOnMigrate() {
+		return this.baselineOnMigrate;
+	}
+
+	public void setBaselineOnMigrate(Boolean baselineOnMigrate) {
+		this.baselineOnMigrate = baselineOnMigrate;
+	}
+
+	public String getBaselineVersion() {
+		return this.baselineVersion;
+	}
+
+	public void setBaselineVersion(String baselineVersion) {
+		this.baselineVersion = baselineVersion;
+	}
+
+	public boolean isCheckLocation() {
+		return this.checkLocation;
 	}
 
 	public void setCheckLocation(boolean checkLocation) {
 		this.checkLocation = checkLocation;
 	}
 
-	public boolean isCheckLocation() {
-		return this.checkLocation;
+	public Boolean getCleanDisabled() {
+		return this.cleanDisabled;
+	}
+
+	public void setCleanDisabled(Boolean cleanDisabled) {
+		this.cleanDisabled = cleanDisabled;
+	}
+
+	public Boolean getCleanOnValidationError() {
+		return this.cleanOnValidationError;
+	}
+
+	public void setCleanOnValidationError(Boolean cleanOnValidationError) {
+		this.cleanOnValidationError = cleanOnValidationError;
+	}
+
+	public boolean isCreateDataSource() {
+		return this.url != null && this.user != null;
 	}
 
 	public boolean isEnabled() {
@@ -99,28 +271,28 @@ public class FlywayProperties {
 		this.enabled = enabled;
 	}
 
-	public String getUser() {
-		return this.user;
+	public String getEncoding() {
+		return this.encoding;
 	}
 
-	public void setUser(String user) {
-		this.user = user;
+	public void setEncoding(String encoding) {
+		this.encoding = encoding;
 	}
 
-	public String getPassword() {
-		return (this.password == null ? "" : this.password);
+	public Boolean getIgnoreFutureMigrations() {
+		return this.ignoreFutureMigrations;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
+	public void setIgnoreFutureMigrations(Boolean ignoreFutureMigrations) {
+		this.ignoreFutureMigrations = ignoreFutureMigrations;
 	}
 
-	public String getUrl() {
-		return this.url;
+	public Boolean getIgnoreMissingMigrations() {
+		return this.ignoreMissingMigrations;
 	}
 
-	public void setUrl(String url) {
-		this.url = url;
+	public void setIgnoreMissingMigrations(Boolean ignoreMissingMigrations) {
+		this.ignoreMissingMigrations = ignoreMissingMigrations;
 	}
 
 	public List<String> getInitSqls() {
@@ -131,8 +303,206 @@ public class FlywayProperties {
 		this.initSqls = initSqls;
 	}
 
-	public boolean isCreateDataSource() {
-		return this.url != null && this.user != null;
+	public String getInstalledBy() {
+		return this.installedBy;
+	}
+
+	public void setInstalledBy(String installedBy) {
+		this.installedBy = installedBy;
+	}
+
+	public List<String> getLocations() {
+		return this.locations;
+	}
+
+	public void setLocations(List<String> locations) {
+		this.locations = locations;
+	}
+
+	public Boolean getOutOfOrder() {
+		return this.outOfOrder;
+	}
+
+	public void setOutOfOrder(Boolean outOfOrder) {
+		this.outOfOrder = outOfOrder;
+	}
+
+	public String getPassword() {
+		return (this.password == null ? "" : this.password);
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getPlaceholderPrefix() {
+		return this.placeholderPrefix;
+	}
+
+	public void setPlaceholderPrefix(String placeholderPrefix) {
+		this.placeholderPrefix = placeholderPrefix;
+	}
+
+	public Boolean getPlaceholderReplacement() {
+		return this.placeholderReplacement;
+	}
+
+	public void setPlaceholderReplacement(Boolean placeholderReplacement) {
+		this.placeholderReplacement = placeholderReplacement;
+	}
+
+	public String getPlaceholderSuffix() {
+		return this.placeholderSuffix;
+	}
+
+	public void setPlaceholderSuffix(String placeholderSuffix) {
+		this.placeholderSuffix = placeholderSuffix;
+	}
+
+	public Map<String, String> getPlaceholders() {
+		return this.placeholders;
+	}
+
+	public void setPlaceholders(Map<String, String> placeholders) {
+		this.placeholders = placeholders;
+	}
+
+	public String getRepeatableSqlMigrationPrefix() {
+		return this.repeatableSqlMigrationPrefix;
+	}
+
+	public void setRepeatableSqlMigrationPrefix(String repeatableSqlMigrationPrefix) {
+		this.repeatableSqlMigrationPrefix = repeatableSqlMigrationPrefix;
+	}
+
+	public List<String> getSchemas() {
+		return this.schemas;
+	}
+
+	public void setSchemas(List<String> schemas) {
+		this.schemas = schemas;
+	}
+
+	public Boolean getSkipDefaultCallbacks() {
+		return this.skipDefaultCallbacks;
+	}
+
+	public void setSkipDefaultCallbacks(Boolean skipDefaultCallbacks) {
+		this.skipDefaultCallbacks = skipDefaultCallbacks;
+	}
+
+	public boolean getSkipDefaultResolvers() {
+		return this.skipDefaultResolvers;
+	}
+
+	public void setSkipDefaultResolvers(Boolean skipDefaultResolvers) {
+		this.skipDefaultResolvers = skipDefaultResolvers;
+	}
+
+	public String getSqlMigrationPrefix() {
+		return this.sqlMigrationPrefix;
+	}
+
+	public void setSqlMigrationPrefix(String sqlMigrationPrefix) {
+		this.sqlMigrationPrefix = sqlMigrationPrefix;
+	}
+
+	public String getSqlMigrationSeparator() {
+		return this.sqlMigrationSeparator;
+	}
+
+	public void setSqlMigrationSeparator(String sqlMigrationSeparator) {
+		this.sqlMigrationSeparator = sqlMigrationSeparator;
+	}
+
+	public String getSqlMigrationSuffix() {
+		return this.sqlMigrationSuffix;
+	}
+
+	public void setSqlMigrationSuffix(String sqlMigrationSuffix) {
+		this.sqlMigrationSuffix = sqlMigrationSuffix;
+	}
+
+	public String getTable() {
+		return this.table;
+	}
+
+	public void setTable(String table) {
+		this.table = table;
+	}
+
+	public String getTarget() {
+		return this.target;
+	}
+
+	public void setTarget(String target) {
+		this.target = target;
+	}
+
+	public String getUrl() {
+		return this.url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getUser() {
+		return this.user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	public Boolean getValidateOnMigrate() {
+		return this.validateOnMigrate;
+	}
+
+	public void setValidateOnMigrate(Boolean validateOnMigrate) {
+		this.validateOnMigrate = validateOnMigrate;
+	}
+
+	void apply(Flyway flyway) {
+		setIfNotNull(this.allowMixedMigrations, flyway::setAllowMixedMigrations);
+		setIfNotNull(this.baselineDescription, flyway::setBaselineDescription);
+		setIfNotNull(this.baselineOnMigrate, flyway::setBaselineOnMigrate);
+		setIfNotNull(this.baselineVersion, flyway::setBaselineVersionAsString);
+		setIfNotNull(this.cleanDisabled, flyway::setCleanDisabled);
+		setIfNotNull(this.cleanOnValidationError, flyway::setCleanOnValidationError);
+		setIfNotNull(this.encoding, flyway::setEncoding);
+		setIfNotNull(this.ignoreFutureMigrations, flyway::setIgnoreFutureMigrations);
+		setIfNotNull(this.ignoreMissingMigrations, flyway::setIgnoreMissingMigrations);
+		setIfNotNull(this.installedBy, flyway::setInstalledBy);
+		setIfNotNull(this.locations, flyway::setLocations);
+		setIfNotNull(this.outOfOrder, flyway::setOutOfOrder);
+		setIfNotNull(this.placeholderPrefix, flyway::setPlaceholderPrefix);
+		setIfNotNull(this.placeholderReplacement, flyway::setPlaceholderReplacement);
+		setIfNotNull(this.placeholders, flyway::setPlaceholders);
+		setIfNotNull(this.placeholderSuffix, flyway::setPlaceholderSuffix);
+		setIfNotNull(this.repeatableSqlMigrationPrefix,
+				flyway::setRepeatableSqlMigrationPrefix);
+		setIfNotNull(this.schemas, flyway::setSchemas);
+		setIfNotNull(this.skipDefaultCallbacks, flyway::setSkipDefaultCallbacks);
+		setIfNotNull(this.skipDefaultResolvers, flyway::setSkipDefaultResolvers);
+		setIfNotNull(this.sqlMigrationPrefix, flyway::setSqlMigrationPrefix);
+		setIfNotNull(this.sqlMigrationSeparator, flyway::setSqlMigrationSeparator);
+		setIfNotNull(this.sqlMigrationSuffix, flyway::setSqlMigrationSuffix);
+		setIfNotNull(this.table, flyway::setTable);
+		setIfNotNull(this.target, flyway::setTargetAsString);
+		setIfNotNull(this.validateOnMigrate, flyway::setValidateOnMigrate);
+	}
+
+	private <T> void setIfNotNull(T value, Consumer<T> consumer) {
+		if (value != null) {
+			consumer.accept(value);
+		}
+	}
+
+	private <T> void setIfNotNull(List<String> value, Consumer<String[]> consumer) {
+		if (value != null) {
+			consumer.accept(value.toArray(new String[value.size()]));
+		}
 	}
 
 }
