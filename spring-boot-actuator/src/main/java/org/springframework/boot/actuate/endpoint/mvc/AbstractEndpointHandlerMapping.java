@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 the original author or authors.
+ * Copyright 2012-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,17 +26,23 @@ import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.boot.actuate.endpoint.Endpoint;
+import org.springframework.boot.autoconfigure.web.ConditionalContentNegotiationStrategy;
+import org.springframework.boot.autoconfigure.web.ConditionalContentNegotiationStrategy.ContentNegotiationCondition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.accept.ContentNegotiationStrategy;
+import org.springframework.web.accept.PathExtensionContentNegotiationStrategy;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -60,6 +66,8 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  */
 public abstract class AbstractEndpointHandlerMapping<E extends MvcEndpoint>
 		extends RequestMappingHandlerMapping {
+
+	private final NoPathExtensionContentNegotiation noPathExtensionContentNegotiation = new NoPathExtensionContentNegotiation();
 
 	private final Set<E> endpoints;
 
@@ -204,6 +212,11 @@ public abstract class AbstractEndpointHandlerMapping<E extends MvcEndpoint>
 		return addSecurityInterceptor(chain);
 	}
 
+	@Override
+	protected void extendInterceptors(List<Object> interceptors) {
+		interceptors.add(this.noPathExtensionContentNegotiation);
+	}
+
 	private HandlerExecutionChain addSecurityInterceptor(HandlerExecutionChain chain) {
 		List<HandlerInterceptor> interceptors = new ArrayList<HandlerInterceptor>();
 		if (chain.getInterceptors() != null) {
@@ -277,6 +290,29 @@ public abstract class AbstractEndpointHandlerMapping<E extends MvcEndpoint>
 	protected CorsConfiguration initCorsConfiguration(Object handler, Method method,
 			RequestMappingInfo mappingInfo) {
 		return this.corsConfiguration;
+	}
+
+	/**
+	 * {@link ContentNegotiationCondition} that does not match
+	 * {@link PathExtensionContentNegotiationStrategy}.
+	 */
+	private static final class NoPathExtensionContentNegotiation
+			extends HandlerInterceptorAdapter implements ContentNegotiationCondition {
+
+		@Override
+		public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
+				Object handler) throws Exception {
+			request.setAttribute(
+					ConditionalContentNegotiationStrategy.REQUEST_ATTRIBUTE_CONTENT_NEGOTIATION_CONDITION,
+					this);
+			return true;
+		}
+
+		@Override
+		public boolean matches(ContentNegotiationStrategy strategy) {
+			return !(strategy instanceof PathExtensionContentNegotiationStrategy);
+		}
+
 	}
 
 }

@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -68,6 +69,7 @@ import org.springframework.validation.DefaultMessageCodesResolver;
 import org.springframework.validation.MessageCodesResolver;
 import org.springframework.validation.Validator;
 import org.springframework.web.accept.ContentNegotiationManager;
+import org.springframework.web.accept.ContentNegotiationStrategy;
 import org.springframework.web.bind.support.ConfigurableWebBindingInitializer;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
@@ -404,8 +406,7 @@ public class WebMvcAutoConfiguration {
 					getClass().getClassLoader())) {
 				return super.mvcValidator();
 			}
-			return WebMvcValidator.get(getApplicationContext(),
-					getValidator());
+			return WebMvcValidator.get(getApplicationContext(), getValidator());
 		}
 
 		@Override
@@ -451,6 +452,18 @@ public class WebMvcAutoConfiguration {
 					}
 				}
 			}
+		}
+
+		@Bean
+		@Override
+		public ContentNegotiationManager mvcContentNegotiationManager() {
+			ContentNegotiationManager contentNegotiationManager = super.mvcContentNegotiationManager();
+			ListIterator<ContentNegotiationStrategy> iterator = contentNegotiationManager
+					.getStrategies().listIterator();
+			while (iterator.hasNext()) {
+				iterator.set(new ConditionalContentNegotiationStrategy(iterator.next()));
+			}
+			return contentNegotiationManager;
 		}
 
 	}
