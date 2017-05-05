@@ -121,22 +121,28 @@ public class Log4J2LoggingSystem extends Slf4JLoggingSystem {
 
 	protected void loadConfiguration(String location, LogFile logFile) {
 		Assert.notNull(location, "Location must not be null");
-		URI uri;
 		try {
-			uri = ResourceUtils.toURI(location);
+			URI uri = ResourceUtils.toURI(location);
+			LoggerContext loggerContext = getLoggerContext(uri);
+			if (!isSuccessfullyInitialized(loggerContext)) {
+				handleInitializationFailure(location, null);
+			}
 		}
 		catch (Exception ex) {
-			throw new IllegalStateException(
-					"Could not initialize Log4J2 logging from " + location, ex);
+			handleInitializationFailure(location, ex);
 		}
-		LoggerContext ctx = getLoggerContext(uri);
+	}
+
+	private boolean isSuccessfullyInitialized(LoggerContext ctx) {
 		if (ctx == null || ctx.getConfiguration() instanceof DefaultConfiguration) {
-			// a DefaultConfiguration is returned in case there's an error with the
-			// provided config file, but in our case, we specifically wanted it to work
-			// and a simple error log message isn't enough
-			throw new IllegalStateException(
-					"Could not initialize Log4J2 logging from " + location);
+			return false;
 		}
+		return true;
+	}
+
+	private void handleInitializationFailure(String location, Exception ex) {
+		throw new IllegalStateException(
+				"Could not initialize Log4J2 logging from " + location, ex);
 	}
 
 	private LoggerContext getLoggerContext(URI uri) {
