@@ -32,9 +32,6 @@ The following sample applications are provided:
 | link:spring-boot-sample-atmosphere[spring-boot-sample-atmosphere]
 | Chat service built using Atmosphere
 
-| link:spring-boot-sample-batch[spring-boot-sample-batch]
-| Define and run a Batch job in a few lines of code
-
 | link:spring-boot-sample-cache[spring-boot-sample-cache]
 | Web application that uses Spring's cache abstraction
 

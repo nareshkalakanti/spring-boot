@@ -16,14 +16,22 @@
 
 package sample.freemarker;
 
-import org.springframework.boot.SpringApplication;
+import com.amazonaws.services.s3.AmazonS3Client;
+
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.cloud.aws.core.io.s3.SimpleStorageResourceLoader;
+import org.springframework.context.support.GenericApplicationContext;
 
 @SpringBootApplication
 public class SampleWebFreeMarkerApplication {
 
 	public static void main(String[] args) throws Exception {
-		SpringApplication.run(SampleWebFreeMarkerApplication.class, args);
+		new SpringApplicationBuilder(SampleWebFreeMarkerApplication.class)
+				.initializers((context) -> {
+					((GenericApplicationContext) context).setResourceLoader(
+							new SimpleStorageResourceLoader(new AmazonS3Client()));
+				}).run(args);
 	}
 
 }

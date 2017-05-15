@@ -1028,7 +1028,7 @@ for each data source:
   source or the one flagged `@Primary` amongst the existing ones), the prefix is
   `datasource.primary`.
 * If the data source bean name ends with `DataSource`, the prefix is the name of the bean
-  without `DataSource` (i.e. `datasource.batch` for `batchDataSource`).
+  without `DataSource` (e.g. `datasource.example` for `exampleDataSource`).
 * In all other cases, the name of the bean is used.
 
 It is possible to override part or all of those defaults by registering a bean with a

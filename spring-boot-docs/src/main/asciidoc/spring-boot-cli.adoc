@@ -155,9 +155,6 @@ The following items are used as "`grab hints`":
 |extends `Specification`
 |Spock test.
 
-|`@EnableBatchProcessing`
-|Spring Batch.
-
 |`@MessageEndpoint` `@EnableIntegrationPatterns`
 |Spring Integration.
 

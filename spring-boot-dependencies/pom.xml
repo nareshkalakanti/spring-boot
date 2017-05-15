@@ -154,7 +154,6 @@
 		<spring.version>5.0.0.RC1</spring.version>
 		<spring-amqp.version>2.0.0.M4</spring-amqp.version>
 		<spring-cloud-connectors.version>2.0.0.M1</spring-cloud-connectors.version>
-		<spring-batch.version>4.0.0.BUILD-SNAPSHOT</spring-batch.version>
 		<spring-data-releasetrain.version>Kay-M3</spring-data-releasetrain.version>
 		<spring-hateoas.version>0.23.0.RELEASE</spring-hateoas.version>
 		<spring-integration.version>5.0.0.M4</spring-integration.version>
@@ -2094,26 +2093,6 @@
 				<groupId>org.springframework.amqp</groupId>
 				<artifactId>spring-rabbit</artifactId>
 				<version>${spring-amqp.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.batch</groupId>
-				<artifactId>spring-batch-core</artifactId>
-				<version>${spring-batch.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.batch</groupId>
-				<artifactId>spring-batch-infrastructure</artifactId>
-				<version>${spring-batch.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.batch</groupId>
-				<artifactId>spring-batch-integration</artifactId>
-				<version>${spring-batch.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.batch</groupId>
-				<artifactId>spring-batch-test</artifactId>
-				<version>${spring-batch.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
