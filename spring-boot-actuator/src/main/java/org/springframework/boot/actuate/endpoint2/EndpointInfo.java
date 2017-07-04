@@ -21,19 +21,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author awilkinson
+ * Information describing an endpoint.
+ * @author Andy Wilkinson
+ * @since 2.0.0
+ * @param <T> the type of the endpoint operation info
  */
-public class EndpointInfo {
+public class EndpointInfo<T extends EndpointOperationInfo> {
 
 	private final String id;
 
-	private final Map<EndpointOperationType, EndpointOperationInfo> operations = new HashMap<>();
+	private final Map<EndpointOperationType, T> operations = new HashMap<>();
 
-	public EndpointInfo(String id, Collection<EndpointOperationInfo> operations) {
+	public EndpointInfo(String id, Collection<T> operations) {
 		this.id = id;
-		for (EndpointOperationInfo operation : operations) {
-			EndpointOperationInfo previous = this.operations
-					.putIfAbsent(operation.getType(), operation);
+		for (T operation : operations) {
+			T previous = this.operations.putIfAbsent(operation.getType(), operation);
 			if (previous != null) {
 				throw new IllegalStateException("Found multiple operations of type "
 						+ operation.getType() + ": " + previous + " and " + operation);
@@ -45,7 +47,7 @@ public class EndpointInfo {
 		return this.id;
 	}
 
-	public Map<EndpointOperationType, EndpointOperationInfo> getOperations() {
+	public Map<EndpointOperationType, T> getOperations() {
 		return this.operations;
 	}
 

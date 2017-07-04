@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.boot.actuate.endpoint2.Endpoint;
 import org.springframework.boot.actuate.endpoint2.EndpointDiscoverer;
 import org.springframework.boot.actuate.endpoint2.EndpointInfo;
 import org.springframework.boot.actuate.endpoint2.EndpointOperation;
@@ -35,7 +36,9 @@ import org.springframework.core.MethodIntrospector.MetadataLookup;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 
 /**
- * Discovers the {@link WebEndpoint web endpoints} in an {@link ApplicationContext}.
+ * Discovers the {@link WebEndpoint web endpoints} in an {@link ApplicationContext}. Web
+ * endpoints include {@link Endpoint standard endpoints} with any web-specific additions
+ * and overrides applied.
  *
  * @author Andy Wilkinson
  * @since 2.0.0
@@ -60,56 +63,74 @@ public class WebEndpointDiscoverer {
 		this.endpointDiscoverer = endpointDiscoverer;
 	}
 
-	public List<EndpointInfo> discoverEndpoints() {
-		List<EndpointInfo> standardEndpoints = this.endpointDiscoverer
+	public List<EndpointInfo<WebEndpointOperationInfo>> discoverEndpoints() {
+		List<EndpointInfo<EndpointOperationInfo>> standardEndpoints = this.endpointDiscoverer
 				.discoverEndpoints();
-		List<EndpointInfo> webEndpoints = discoverWebEndpoints();
+		List<EndpointInfo<WebEndpointOperationInfo>> webEndpoints = discoverWebEndpoints();
 		return merge(standardEndpoints, webEndpoints);
 	}
 
-	private List<EndpointInfo> discoverWebEndpoints() {
+	private List<EndpointInfo<WebEndpointOperationInfo>> discoverWebEndpoints() {
 		String[] endpointBeanNames = this.applicationContext
 				.getBeanNamesForAnnotation(WebEndpoint.class);
 		return Stream.of(endpointBeanNames).map((beanName) -> {
 			Class<?> beanType = this.applicationContext.getType(beanName);
 			WebEndpoint endpoint = AnnotatedElementUtils.findMergedAnnotation(beanType,
 					WebEndpoint.class);
-			Map<Method, EndpointOperationInfo> operationMethods = MethodIntrospector
+			Map<Method, WebEndpointOperationInfo> operationMethods = MethodIntrospector
 					.selectMethods(beanType,
-							(MetadataLookup<EndpointOperationInfo>) (
-									method) -> createEndpointOperationInfo(beanName,
-											method));
-			return new EndpointInfo(endpoint.id(), operationMethods.values());
+							(MetadataLookup<WebEndpointOperationInfo>) (
+									method) -> createEndpointOperationInfo(endpoint.id(),
+											beanName, method));
+			return new EndpointInfo<WebEndpointOperationInfo>(endpoint.id(),
+					operationMethods.values());
 		}).collect(Collectors.toList());
 	}
 
-	private EndpointOperationInfo createEndpointOperationInfo(String beanName,
-			Method method) {
+	private WebEndpointOperationInfo createEndpointOperationInfo(String endpointId,
+			String beanName, Method method) {
 		EndpointOperation endpointOperation = AnnotatedElementUtils
 				.findMergedAnnotation(method, EndpointOperation.class);
 		if (endpointOperation == null) {
 			return null;
 		}
-		return new EndpointOperationInfo(beanName, method, endpointOperation.type());
+		return new WebEndpointOperationInfo(endpointId, beanName, method,
+				endpointOperation.type());
 	}
 
-	private List<EndpointInfo> merge(List<EndpointInfo> standardEndpoints,
-			List<EndpointInfo> webEndpoints) {
-		Map<String, EndpointInfo> endpointsById = new HashMap<>();
-		for (EndpointInfo standardEndpoint : standardEndpoints) {
-			endpointsById.put(standardEndpoint.getId(), standardEndpoint);
+	private List<EndpointInfo<WebEndpointOperationInfo>> merge(
+			List<EndpointInfo<EndpointOperationInfo>> standardEndpoints,
+			List<EndpointInfo<WebEndpointOperationInfo>> webEndpoints) {
+		Map<String, EndpointInfo<WebEndpointOperationInfo>> endpointsById = new HashMap<>();
+		for (EndpointInfo<EndpointOperationInfo> standardEndpoint : standardEndpoints) {
+			endpointsById.put(standardEndpoint.getId(), convert(standardEndpoint));
 		}
-		for (EndpointInfo webEndpoint : webEndpoints) {
+		for (EndpointInfo<WebEndpointOperationInfo> webEndpoint : webEndpoints) {
 			endpointsById.merge(webEndpoint.getId(), webEndpoint, this::merge);
 		}
 		return new ArrayList<>(endpointsById.values());
 	}
 
-	private EndpointInfo merge(EndpointInfo standardEndpoint, EndpointInfo webEndpoint) {
-		Map<EndpointOperationType, EndpointOperationInfo> operations = new HashMap<>(
-				standardEndpoint.getOperations());
-		operations.putAll(webEndpoint.getOperations());
-		return new EndpointInfo(standardEndpoint.getId(), operations.values());
+	private EndpointInfo<WebEndpointOperationInfo> convert(
+			EndpointInfo<EndpointOperationInfo> endpointInfo) {
+		List<WebEndpointOperationInfo> webOperations = new ArrayList<>();
+		endpointInfo.getOperations().forEach((type, operationInfo) -> {
+			webOperations.add(new WebEndpointOperationInfo(endpointInfo.getId(),
+					operationInfo.getBeanName(), operationInfo.getOperationMethod(),
+					operationInfo.getType()));
+		});
+		return new EndpointInfo<WebEndpointOperationInfo>(endpointInfo.getId(),
+				webOperations);
+	}
+
+	private EndpointInfo<WebEndpointOperationInfo> merge(
+			EndpointInfo<WebEndpointOperationInfo> baseEndpoint,
+			EndpointInfo<WebEndpointOperationInfo> overridingEndpoint) {
+		Map<EndpointOperationType, WebEndpointOperationInfo> operations = new HashMap<>(
+				baseEndpoint.getOperations());
+		operations.putAll(overridingEndpoint.getOperations());
+		return new EndpointInfo<WebEndpointOperationInfo>(baseEndpoint.getId(),
+				operations.values());
 	}
 
 }

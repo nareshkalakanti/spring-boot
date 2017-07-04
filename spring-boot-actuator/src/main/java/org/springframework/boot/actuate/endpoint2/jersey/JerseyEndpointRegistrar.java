@@ -31,11 +31,10 @@ import org.glassfish.jersey.server.model.Resource.Builder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.actuate.endpoint2.Endpoint;
 import org.springframework.boot.actuate.endpoint2.EndpointInfo;
-import org.springframework.boot.actuate.endpoint2.EndpointOperationInfo;
 import org.springframework.boot.actuate.endpoint2.EndpointOperationType;
 import org.springframework.boot.actuate.endpoint2.web.WebEndpointDiscoverer;
+import org.springframework.boot.actuate.endpoint2.web.WebEndpointOperationInfo;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ReflectionUtils;
 
@@ -61,14 +60,15 @@ class JerseyEndpointRegistrar implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		for (EndpointInfo endpointInfo : this.webEndpointDiscoverer.discoverEndpoints()) {
-			Map<EndpointOperationType, EndpointOperationInfo> operations = endpointInfo
+		for (EndpointInfo<WebEndpointOperationInfo> endpointInfo : this.webEndpointDiscoverer
+				.discoverEndpoints()) {
+			Map<EndpointOperationType, WebEndpointOperationInfo> operations = endpointInfo
 					.getOperations();
-			for (EndpointOperationInfo operationInfo : operations.values()) {
-				String path = getPathForOperation(endpointInfo, operationInfo);
+			for (WebEndpointOperationInfo operationInfo : operations.values()) {
+				String path = operationInfo.getPath();
 				Builder resourceBuilder = Resource.builder().path(path);
 				Method operationMethod = operationInfo.getOperationMethod();
-				resourceBuilder.addMethod(getHttpMethodForOperation(operationInfo))
+				resourceBuilder.addMethod(operationInfo.getHttpMethod().name())
 						.produces("application/vnd.spring-boot.actuator.v2+json")
 						.handledBy(
 								new EndpointInvokingInflector(
@@ -79,17 +79,6 @@ class JerseyEndpointRegistrar implements InitializingBean {
 				System.out.println("Mapping " + path + " to " + operationMethod);
 			}
 		}
-	}
-
-	private String getPathForOperation(EndpointInfo endpoint,
-			EndpointOperationInfo operation) {
-		return operation.getType() == EndpointOperationType.PARTIAL_READ
-				? endpoint.getId() + "/{selector}" : endpoint.getId();
-	}
-
-	private String getHttpMethodForOperation(EndpointOperationInfo operation) {
-		return operation.getType() == EndpointOperationType.WRITE ? HttpMethod.POST.name()
-				: HttpMethod.GET.name();
 	}
 
 	private static class EndpointInvokingInflector

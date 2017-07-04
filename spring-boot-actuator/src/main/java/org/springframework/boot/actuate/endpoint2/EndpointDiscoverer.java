@@ -48,7 +48,7 @@ public class EndpointDiscoverer {
 		this.applicationContext = applicationContext;
 	}
 
-	public List<EndpointInfo> discoverEndpoints() {
+	public List<EndpointInfo<EndpointOperationInfo>> discoverEndpoints() {
 		String[] endpointBeanNames = this.applicationContext
 				.getBeanNamesForAnnotation(Endpoint.class);
 		return Stream.of(endpointBeanNames).map((beanName) -> {
@@ -60,7 +60,8 @@ public class EndpointDiscoverer {
 							(MetadataLookup<EndpointOperationInfo>) (
 									method) -> createEndpointOperationInfo(beanName,
 											method));
-			return new EndpointInfo(endpoint.id(), operationMethods.values());
+			return new EndpointInfo<EndpointOperationInfo>(endpoint.id(),
+					operationMethods.values());
 		}).collect(Collectors.toList());
 	}
 

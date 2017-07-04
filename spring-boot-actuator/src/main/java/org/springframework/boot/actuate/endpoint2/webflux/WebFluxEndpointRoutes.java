@@ -13,13 +13,14 @@ import org.springframework.boot.actuate.endpoint2.EndpointInfo;
 import org.springframework.boot.actuate.endpoint2.EndpointOperationInfo;
 import org.springframework.boot.actuate.endpoint2.EndpointOperationType;
 import org.springframework.boot.actuate.endpoint2.NonBlocking;
+import org.springframework.boot.actuate.endpoint2.web.WebEndpointDiscoverer;
+import org.springframework.boot.actuate.endpoint2.web.WebEndpointOperationInfo;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.reactive.function.server.RequestPredicate;
@@ -40,8 +41,8 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 @Configuration
 public class WebFluxEndpointRoutes {
 
-	private static final MediaType ACTUATOR_MEDIA_TYPE =
-			MediaType.parseMediaType("application/vnd.spring-boot.actuator.v2+json");
+	private static final MediaType ACTUATOR_MEDIA_TYPE = MediaType
+			.parseMediaType("application/vnd.spring-boot.actuator.v2+json");
 
 	private final ApplicationContext applicationContext;
 
@@ -51,42 +52,32 @@ public class WebFluxEndpointRoutes {
 
 	@Bean
 	@ConditionalOnBean(EndpointDiscoverer.class)
-	public RouterFunction<ServerResponse> webFluxEndpointRouter(EndpointDiscoverer endpointDiscoverer) {
+	public RouterFunction<ServerResponse> webFluxEndpointRouter(
+			WebEndpointDiscoverer endpointDiscoverer) {
 		List<RouterFunction<ServerResponse>> routes = new ArrayList<>();
-		for (EndpointInfo endpointInfo : endpointDiscoverer.discoverEndpoints()) {
-			Map<EndpointOperationType, EndpointOperationInfo> operations = endpointInfo
+		for (EndpointInfo<WebEndpointOperationInfo> endpointInfo : endpointDiscoverer
+				.discoverEndpoints()) {
+			Map<EndpointOperationType, WebEndpointOperationInfo> operations = endpointInfo
 					.getOperations();
-			for (EndpointOperationInfo operationInfo : operations.values()) {
+			for (WebEndpointOperationInfo operationInfo : operations.values()) {
 				EndpointHandler handler = createEndpointHandler(operationInfo);
 				if (handler != null) {
-					routes.add(route(
-							predicate(endpointInfo, operationInfo), handler::apply));
+					routes.add(route(predicate(endpointInfo, operationInfo),
+							handler::apply));
 				}
 			}
 		}
-		return routes.stream().reduce(RouterFunction::and)
-				.orElse(null); // TODO: empty router?
+		return routes.stream().reduce(RouterFunction::and).orElse(null); // TODO: empty
+																			// router?
 	}
 
-	private RequestPredicate predicate(EndpointInfo endpointInfo,
-			EndpointOperationInfo operation) {
-		return method(getHttpMethodForOperation(operation))
+	private RequestPredicate predicate(
+			EndpointInfo<WebEndpointOperationInfo> endpointInfo,
+			WebEndpointOperationInfo operation) {
+		return method(operation.getHttpMethod())
 				.and(accept(ACTUATOR_MEDIA_TYPE).or(accept(MediaType.APPLICATION_JSON)))
-				.and((path(getPathForOperation(endpointInfo, operation))));
+				.and((path(operation.getPath())));
 	}
-
-
-	private String getPathForOperation(EndpointInfo endpoint,
-			EndpointOperationInfo operation) {
-		return "/" + (operation.getType() == EndpointOperationType.PARTIAL_READ
-				? endpoint.getId() + "/{selector}" : endpoint.getId());
-	}
-
-	private HttpMethod getHttpMethodForOperation(EndpointOperationInfo operation) {
-		return operation.getType() == EndpointOperationType.WRITE ? HttpMethod.POST
-				: HttpMethod.GET;
-	}
-
 
 	private EndpointHandler createEndpointHandler(EndpointOperationInfo operation) {
 		Object bean = this.applicationContext.getBean(operation.getBeanName());
@@ -103,7 +94,6 @@ public class WebFluxEndpointRoutes {
 		return null;
 	}
 
-
 	private static class EndpointHandler {
 
 		private final Object bean;
@@ -114,8 +104,7 @@ public class WebFluxEndpointRoutes {
 
 		private final Class<?> bodyType;
 
-		EndpointHandler(Object bean, Method method, boolean reactive,
-				Class<?> bodyType) {
+		EndpointHandler(Object bean, Method method, boolean reactive, Class<?> bodyType) {
 			this.bean = bean;
 			this.method = method;
 			this.reactive = reactive;
@@ -127,22 +116,23 @@ public class WebFluxEndpointRoutes {
 					.contentType(ACTUATOR_MEDIA_TYPE);
 			if (serverRequest.pathVariables().isEmpty()) {
 				Publisher<?> result = invoke();
-				return new UnsafeBody<>(bodyType, result).body(response);
+				return new UnsafeBody<>(this.bodyType, result).body(response);
 			}
 			else {
-				Publisher<?> result = invoke(serverRequest.pathVariables().values().iterator().next());
-				return new UnsafeBody<>(bodyType, result).body(response);
+				Publisher<?> result = invoke(
+						serverRequest.pathVariables().values().iterator().next());
+				return new UnsafeBody<>(this.bodyType, result).body(response);
 			}
 		}
 
 		private Publisher<?> invoke(Object... parameters) {
-			if (reactive) {
-				return (Publisher<?>) ReflectionUtils.invokeMethod(this.method,
-						this.bean, parameters);
+			if (this.reactive) {
+				return (Publisher<?>) ReflectionUtils.invokeMethod(this.method, this.bean,
+						parameters);
 			}
 			else {
-				return Mono.defer(() -> Mono.justOrEmpty(ReflectionUtils.invokeMethod(
-						this.method, this.bean, parameters)));
+				return Mono.defer(() -> Mono.justOrEmpty(ReflectionUtils
+						.invokeMethod(this.method, this.bean, parameters)));
 			}
 		}
 
@@ -159,7 +149,7 @@ public class WebFluxEndpointRoutes {
 			}
 
 			Mono<ServerResponse> body(ServerResponse.BodyBuilder builder) {
-				return builder.body(publisher, type);
+				return builder.body(this.publisher, this.type);
 			}
 
 		}
