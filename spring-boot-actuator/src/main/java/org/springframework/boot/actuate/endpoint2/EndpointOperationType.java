@@ -17,10 +17,26 @@
 package org.springframework.boot.actuate.endpoint2;
 
 /**
- * @author awilkinson
+ * An enumeration of the different types of operation supported by an endpoint.
+ *
+ * @author Andy Wilkinson
+ * @since 2.0.0
  */
 public enum EndpointOperationType {
 
-	READ, PARTIAL_READ, WRITE
+	/**
+	 * A read operation.
+	 */
+	READ,
+
+	/**
+	 * A read operation that returns a portion of the endpoint's data.
+	 */
+	PARTIAL_READ,
+
+	/**
+	 * A write operation.
+	 */
+	WRITE
 
 }

@@ -26,7 +26,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @author awilkinson
+ * Auto-configuration for web endpoints.
+ *
+ * @author Andy Wilkinson
+ * @since 2.0.0
  */
 @ConditionalOnWebApplication
 @Configuration

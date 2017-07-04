@@ -16,7 +16,6 @@
 
 package org.springframework.boot.actuate.endpoint2;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +47,11 @@ public class EndpointDiscoverer {
 		this.applicationContext = applicationContext;
 	}
 
+	/**
+	 * Discovers the endpoints.
+	 *
+	 * @return the discovered endpoints
+	 */
 	public List<EndpointInfo<EndpointOperationInfo>> discoverEndpoints() {
 		String[] endpointBeanNames = this.applicationContext
 				.getBeanNamesForAnnotation(Endpoint.class);
@@ -63,10 +67,6 @@ public class EndpointDiscoverer {
 			return new EndpointInfo<EndpointOperationInfo>(endpoint.id(),
 					operationMethods.values());
 		}).collect(Collectors.toList());
-	}
-
-	protected Class<? extends Annotation> getTypeAnnotation() {
-		return Endpoint.class;
 	}
 
 	private EndpointOperationInfo createEndpointOperationInfo(String beanName,

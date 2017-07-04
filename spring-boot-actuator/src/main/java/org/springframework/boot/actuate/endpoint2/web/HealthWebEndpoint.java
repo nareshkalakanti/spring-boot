@@ -28,16 +28,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 /**
- * @author awilkinson
+ * A web specialization of {@link HealthEndpoint}.
+ *
+ * @author Andy Wilkinson
  */
 @WebEndpoint(id = "health")
-public class HealthWebEndpoint {
+class HealthWebEndpoint {
 
 	private final HealthEndpoint delegate;
 
 	private final Map<String, HttpStatus> statusMapping = new HashMap<>();
 
-	public HealthWebEndpoint(HealthEndpoint delegate) {
+	HealthWebEndpoint(HealthEndpoint delegate) {
 		this.delegate = delegate;
 		this.statusMapping.put(Status.DOWN.getCode(), HttpStatus.SERVICE_UNAVAILABLE);
 		this.statusMapping.put(Status.OUT_OF_SERVICE.getCode(),

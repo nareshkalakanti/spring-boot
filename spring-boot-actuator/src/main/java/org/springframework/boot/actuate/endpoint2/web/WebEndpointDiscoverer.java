@@ -37,8 +37,8 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 
 /**
  * Discovers the {@link WebEndpoint web endpoints} in an {@link ApplicationContext}. Web
- * endpoints include {@link Endpoint standard endpoints} with any web-specific additions
- * and overrides applied.
+ * endpoints include all {@link Endpoint standard endpoints} and any {@link WebEndpoint
+ * web-specific} additions and overrides.
  *
  * @author Andy Wilkinson
  * @since 2.0.0

@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Configuration;
  * Auto-configuration for the Actuator's {@link Endpoint Endpoints}.
  *
  * @author Andy Wilkinson
+ * @since 2.0.0
  */
 @Configuration
 public class EndpointAutoConfiguration {

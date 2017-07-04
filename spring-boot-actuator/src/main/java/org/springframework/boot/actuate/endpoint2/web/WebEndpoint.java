@@ -23,7 +23,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author awilkinson
+ * Identifies a type has being a web endpoint.
+ *
+ * @author Andy Wilkinson
+ * @since 2.0.0
+ * @see WebEndpointDiscoverer
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

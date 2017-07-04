@@ -22,9 +22,10 @@ import java.util.Map;
 
 /**
  * Information describing an endpoint.
+ *
+ * @param <T> the type of the endpoint operation info
  * @author Andy Wilkinson
  * @since 2.0.0
- * @param <T> the type of the endpoint operation info
  */
 public class EndpointInfo<T extends EndpointOperationInfo> {
 
@@ -32,6 +33,13 @@ public class EndpointInfo<T extends EndpointOperationInfo> {
 
 	private final Map<EndpointOperationType, T> operations = new HashMap<>();
 
+	/**
+	 * Creates a new {@code EndpointInfo} describing an endpoint with the given {@code id}
+	 * and {@code operations}.
+	 *
+	 * @param id the id of the endpoint
+	 * @param operations the operations of the endpoint
+	 */
 	public EndpointInfo(String id, Collection<T> operations) {
 		this.id = id;
 		for (T operation : operations) {
@@ -43,10 +51,18 @@ public class EndpointInfo<T extends EndpointOperationInfo> {
 		}
 	}
 
+	/**
+	 * Returns the id of the endpoint.
+	 * @return the id
+	 */
 	public String getId() {
 		return this.id;
 	}
 
+	/**
+	 * Returns the operations of the endpoint, keyed by type.
+	 * @return the operations
+	 */
 	public Map<EndpointOperationType, T> getOperations() {
 		return this.operations;
 	}

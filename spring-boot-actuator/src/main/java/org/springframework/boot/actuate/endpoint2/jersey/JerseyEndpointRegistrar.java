@@ -81,7 +81,7 @@ class JerseyEndpointRegistrar implements InitializingBean {
 		}
 	}
 
-	private static class EndpointInvokingInflector
+	private static final class EndpointInvokingInflector
 			implements Inflector<ContainerRequestContext, Object> {
 
 		private final Object bean;

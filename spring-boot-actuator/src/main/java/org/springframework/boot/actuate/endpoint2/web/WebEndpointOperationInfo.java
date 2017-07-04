@@ -23,7 +23,7 @@ import org.springframework.boot.actuate.endpoint2.EndpointOperationType;
 import org.springframework.http.HttpMethod;
 
 /**
- * Information describing an operation on a web endpoint
+ * Information describing an operation on a web endpoint.
  *
  * @author Andy Wilkinson
  * @since 2.0.0
@@ -38,6 +38,10 @@ public class WebEndpointOperationInfo extends EndpointOperationInfo {
 		this.endpointId = endpointId;
 	}
 
+	/**
+	 * Returns the path to which requests that invoke the operation should be sent.
+	 * @return the path
+	 */
 	public String getPath() {
 		String path = "/" + this.endpointId;
 		if (getType() == EndpointOperationType.PARTIAL_READ) {
@@ -46,6 +50,10 @@ public class WebEndpointOperationInfo extends EndpointOperationInfo {
 		return path;
 	}
 
+	/**
+	 * Returns the HTTP method which requests that invoke the operation should use.
+	 * @return the HTTP method
+	 */
 	public HttpMethod getHttpMethod() {
 		if (getType() == EndpointOperationType.WRITE) {
 			return HttpMethod.POST;

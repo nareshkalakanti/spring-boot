@@ -23,13 +23,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author awilkinson
+ * Identifies a method as been an operation on an endpoint.
+ *
+ * @author Andy Wilkinson
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface EndpointOperation {
 
+	/**
+	 * Returns the type of the operation.
+	 *
+	 * @return the type
+	 */
 	EndpointOperationType type();
 
 }
