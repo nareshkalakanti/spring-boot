@@ -18,6 +18,8 @@ package org.springframework.boot.actuate.endpoint2;
 
 import java.lang.reflect.Method;
 
+import org.springframework.util.ReflectionUtils;
+
 /**
  * Information about an operation on an endpoint.
  *
@@ -36,6 +38,7 @@ public class EndpointOperationInfo {
 			EndpointOperationType type) {
 		this.beanName = beanName;
 		this.operationMethod = method;
+		ReflectionUtils.makeAccessible(method);
 		this.type = type;
 	}
 
