@@ -19,7 +19,9 @@ org.springframework.boot.actuate.autoconfigure.TraceWebFilterAutoConfiguration,\
 org.springframework.boot.actuate.cloudfoundry.CloudFoundryActuatorAutoConfiguration,\
 org.springframework.boot.actuate.endpoint2.jersey.JerseyEndpointAutoConfiguration,\
 org.springframework.boot.actuate.endpoint2.EndpointAutoConfiguration,\
-org.springframework.boot.actuate.endpoint2.web.WebEndpointAutoConfiguration
+org.springframework.boot.actuate.endpoint2.web.WebEndpointAutoConfiguration,\
+org.springframework.boot.actuate.endpoint2.webflux.WebFluxEndpointAutoConfiguration
+
 
 org.springframework.boot.actuate.autoconfigure.ManagementContextConfiguration=\
 org.springframework.boot.actuate.autoconfigure.EndpointWebMvcManagementContextConfiguration,\

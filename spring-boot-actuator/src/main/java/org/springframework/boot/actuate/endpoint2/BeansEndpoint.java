@@ -55,6 +55,7 @@ public class BeansEndpoint implements ApplicationContextAware {
 	}
 
 	@EndpointOperation(type = EndpointOperationType.READ)
+	@NonBlocking // TODO
 	public List<Object> invoke() {
 		return this.parser.parseList(this.liveBeansView.getSnapshotAsJson());
 	}
