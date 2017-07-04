@@ -25,15 +25,11 @@ import java.util.Map;
  */
 public class EndpointInfo {
 
-	private final String beanName;
-
 	private final String id;
 
 	private final Map<EndpointOperationType, EndpointOperationInfo> operations = new HashMap<>();
 
-	public EndpointInfo(String beanName, String id,
-			Collection<EndpointOperationInfo> operations) {
-		this.beanName = beanName;
+	public EndpointInfo(String id, Collection<EndpointOperationInfo> operations) {
 		this.id = id;
 		for (EndpointOperationInfo operation : operations) {
 			EndpointOperationInfo previous = this.operations
@@ -43,10 +39,6 @@ public class EndpointInfo {
 						+ operation.getType() + ": " + previous + " and " + operation);
 			}
 		}
-	}
-
-	public String getBeanName() {
-		return this.beanName;
 	}
 
 	public String getId() {

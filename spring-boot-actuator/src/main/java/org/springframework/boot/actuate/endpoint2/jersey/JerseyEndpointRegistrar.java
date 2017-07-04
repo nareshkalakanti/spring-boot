@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -29,12 +30,13 @@ import org.glassfish.jersey.server.model.Resource.Builder;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.actuate.endpoint2.Endpoint;
-import org.springframework.boot.actuate.endpoint2.EndpointDiscoverer;
 import org.springframework.boot.actuate.endpoint2.EndpointInfo;
 import org.springframework.boot.actuate.endpoint2.EndpointOperationInfo;
 import org.springframework.boot.actuate.endpoint2.EndpointOperationType;
+import org.springframework.boot.actuate.endpoint2.web.WebEndpointDiscoverer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -46,32 +48,35 @@ class JerseyEndpointRegistrar implements InitializingBean {
 
 	private final ApplicationContext applicationContext;
 
-	private final EndpointDiscoverer endpointDiscoverer;
+	private final WebEndpointDiscoverer webEndpointDiscoverer;
 
 	private final ResourceConfig resourceConfig;
 
 	public JerseyEndpointRegistrar(ApplicationContext applicationContext,
-			EndpointDiscoverer endpointDiscoverer, ResourceConfig resourceConfig) {
+			WebEndpointDiscoverer webEndpointDiscoverer, ResourceConfig resourceConfig) {
 		this.applicationContext = applicationContext;
-		this.endpointDiscoverer = endpointDiscoverer;
+		this.webEndpointDiscoverer = webEndpointDiscoverer;
 		this.resourceConfig = resourceConfig;
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		for (EndpointInfo endpointInfo : this.endpointDiscoverer.discoverEndpoints()) {
+		for (EndpointInfo endpointInfo : this.webEndpointDiscoverer.discoverEndpoints()) {
 			Map<EndpointOperationType, EndpointOperationInfo> operations = endpointInfo
 					.getOperations();
 			for (EndpointOperationInfo operationInfo : operations.values()) {
-				Builder resourceBuilder = Resource.builder()
-						.path(getPathForOperation(endpointInfo, operationInfo));
+				String path = getPathForOperation(endpointInfo, operationInfo);
+				Builder resourceBuilder = Resource.builder().path(path);
+				Method operationMethod = operationInfo.getOperationMethod();
 				resourceBuilder.addMethod(getHttpMethodForOperation(operationInfo))
 						.produces("application/vnd.spring-boot.actuator.v2+json")
-						.handledBy(new EndpointInvokingInflector(
-								this.applicationContext
-										.getBean(endpointInfo.getBeanName()),
-								operationInfo.getOperationMethod()));
+						.handledBy(
+								new EndpointInvokingInflector(
+										this.applicationContext
+												.getBean(operationInfo.getBeanName()),
+										operationMethod));
 				this.resourceConfig.registerResources(resourceBuilder.build());
+				System.out.println("Mapping " + path + " to " + operationMethod);
 			}
 		}
 	}
@@ -104,13 +109,24 @@ class JerseyEndpointRegistrar implements InitializingBean {
 			MultivaluedMap<String, String> pathParameters = data.getUriInfo()
 					.getPathParameters();
 			if (pathParameters.isEmpty()) {
-				return ReflectionUtils.invokeMethod(this.method, this.bean);
+				return convertIfNecessary(
+						ReflectionUtils.invokeMethod(this.method, this.bean));
 			}
 			if (pathParameters.size() == 1) {
-				return ReflectionUtils.invokeMethod(this.method, this.bean,
-						pathParameters.values().iterator().next().iterator().next());
+				return convertIfNecessary(ReflectionUtils.invokeMethod(this.method,
+						this.bean,
+						pathParameters.values().iterator().next().iterator().next()));
 			}
 			throw new IllegalArgumentException("Wrong number of path parameters");
+		}
+
+		private Object convertIfNecessary(Object response) {
+			if (!(response instanceof ResponseEntity)) {
+				return response;
+			}
+			ResponseEntity<?> responseEntity = (ResponseEntity<?>) response;
+			return Response.status(responseEntity.getStatusCode().value())
+					.entity(responseEntity.getBody()).build();
 		}
 
 	}

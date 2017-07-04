@@ -14,35 +14,22 @@
  * limitations under the License.
  */
 
-package org.springframework.boot.actuate.endpoint2;
+package org.springframework.boot.actuate.endpoint2.web;
 
-import java.lang.reflect.Method;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class EndpointOperationInfo {
+/**
+ * @author awilkinson
+ */
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface WebEndpoint {
 
-	private final String beanName;
-
-	private final Method operationMethod;
-
-	private final EndpointOperationType type;
-
-	public EndpointOperationInfo(String beanName, Method method,
-			EndpointOperationType type) {
-		this.beanName = beanName;
-		this.operationMethod = method;
-		this.type = type;
-	}
-
-	public String getBeanName() {
-		return this.beanName;
-	}
-
-	public Method getOperationMethod() {
-		return this.operationMethod;
-	}
-
-	public EndpointOperationType getType() {
-		return this.type;
-	}
+	String id();
 
 }

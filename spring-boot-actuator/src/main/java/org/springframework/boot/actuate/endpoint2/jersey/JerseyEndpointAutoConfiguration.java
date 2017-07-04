@@ -20,6 +20,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import org.springframework.boot.actuate.endpoint2.Endpoint;
 import org.springframework.boot.actuate.endpoint2.EndpointDiscoverer;
+import org.springframework.boot.actuate.endpoint2.web.WebEndpointDiscoverer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.ApplicationContext;
@@ -39,8 +40,8 @@ public class JerseyEndpointAutoConfiguration {
 	@ConditionalOnBean({ ResourceConfig.class, EndpointDiscoverer.class })
 	@Bean
 	public JerseyEndpointRegistrar jerseyEndpointRegistrar(
-			ApplicationContext applicationContext, EndpointDiscoverer endpointDiscoverer,
-			ResourceConfig resourceConfig) {
+			ApplicationContext applicationContext,
+			WebEndpointDiscoverer endpointDiscoverer, ResourceConfig resourceConfig) {
 		return new JerseyEndpointRegistrar(applicationContext, endpointDiscoverer,
 				resourceConfig);
 	}

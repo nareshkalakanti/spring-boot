@@ -16,6 +16,7 @@
 
 package org.springframework.boot.actuate.endpoint2;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -55,19 +56,26 @@ public class EndpointDiscoverer {
 			Endpoint endpoint = AnnotatedElementUtils.findMergedAnnotation(beanType,
 					Endpoint.class);
 			Map<Method, EndpointOperationInfo> operationMethods = MethodIntrospector
-					.selectMethods(beanType, (MetadataLookup<EndpointOperationInfo>) (
-							method) -> createEndpointOperationInfo(method));
-			return new EndpointInfo(beanName, endpoint.id(), operationMethods.values());
+					.selectMethods(beanType,
+							(MetadataLookup<EndpointOperationInfo>) (
+									method) -> createEndpointOperationInfo(beanName,
+											method));
+			return new EndpointInfo(endpoint.id(), operationMethods.values());
 		}).collect(Collectors.toList());
 	}
 
-	private EndpointOperationInfo createEndpointOperationInfo(Method method) {
+	protected Class<? extends Annotation> getTypeAnnotation() {
+		return Endpoint.class;
+	}
+
+	private EndpointOperationInfo createEndpointOperationInfo(String beanName,
+			Method method) {
 		EndpointOperation endpointOperation = AnnotatedElementUtils
 				.findMergedAnnotation(method, EndpointOperation.class);
 		if (endpointOperation == null) {
 			return null;
 		}
-		return new EndpointOperationInfo(method, endpointOperation.type());
+		return new EndpointOperationInfo(beanName, method, endpointOperation.type());
 	}
 
 }

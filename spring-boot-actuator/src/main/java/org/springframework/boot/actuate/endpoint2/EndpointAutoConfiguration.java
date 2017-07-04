@@ -16,6 +16,10 @@
 
 package org.springframework.boot.actuate.endpoint2;
 
+import java.util.Map;
+
+import org.springframework.boot.actuate.health.HealthAggregator;
+import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +46,12 @@ public class EndpointAutoConfiguration {
 	@Bean
 	public LoggersEndpoint loggersEndpoint(LoggingSystem loggingSystem) {
 		return new LoggersEndpoint(loggingSystem);
+	}
+
+	@Bean
+	public HealthEndpoint healthEndpoint(HealthAggregator healthAggregator,
+			Map<String, HealthIndicator> healthIndicators) {
+		return new HealthEndpoint(healthAggregator, healthIndicators);
 	}
 
 }
