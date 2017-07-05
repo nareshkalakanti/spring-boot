@@ -16,24 +16,19 @@
 
 package org.springframework.boot.actuate.endpoint2.web;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import org.springframework.boot.actuate.endpoint2.AbstractEndpointDiscoverer;
 import org.springframework.boot.actuate.endpoint2.Endpoint;
 import org.springframework.boot.actuate.endpoint2.EndpointDiscoverer;
 import org.springframework.boot.actuate.endpoint2.EndpointInfo;
-import org.springframework.boot.actuate.endpoint2.EndpointOperation;
 import org.springframework.boot.actuate.endpoint2.EndpointOperationInfo;
 import org.springframework.boot.actuate.endpoint2.EndpointOperationType;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.MethodIntrospector;
-import org.springframework.core.MethodIntrospector.MetadataLookup;
-import org.springframework.core.annotation.AnnotatedElementUtils;
 
 /**
  * Discovers the {@link WebEndpoint web endpoints} in an {@link ApplicationContext}. Web
@@ -43,9 +38,8 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
  * @author Andy Wilkinson
  * @since 2.0.0
  */
-public class WebEndpointDiscoverer {
-
-	private final ApplicationContext applicationContext;
+public class WebEndpointDiscoverer
+		extends AbstractEndpointDiscoverer<WebEndpointOperationInfo> {
 
 	private final EndpointDiscoverer endpointDiscoverer;
 
@@ -57,60 +51,53 @@ public class WebEndpointDiscoverer {
 	 * combined with any web-specific endpoints
 	 * @param applicationContext the application context
 	 */
-	public WebEndpointDiscoverer(EndpointDiscoverer endpointDiscoverer,
+	WebEndpointDiscoverer(EndpointDiscoverer endpointDiscoverer,
 			ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
+		super(WebEndpoint.class, applicationContext,
+				(endpointAttributes, operationAttributes, beanName, method) -> {
+					WebEndpointOperationInfo operationInfo = new WebEndpointOperationInfo(
+							endpointAttributes.getString("id"), beanName, method,
+							operationAttributes.getEnum("type"));
+					return operationInfo;
+				});
 		this.endpointDiscoverer = endpointDiscoverer;
 	}
 
+	@Override
 	public List<EndpointInfo<WebEndpointOperationInfo>> discoverEndpoints() {
 		List<EndpointInfo<EndpointOperationInfo>> standardEndpoints = this.endpointDiscoverer
 				.discoverEndpoints();
-		List<EndpointInfo<WebEndpointOperationInfo>> webEndpoints = discoverWebEndpoints();
-		return merge(standardEndpoints, webEndpoints);
+		List<EndpointInfo<WebEndpointOperationInfo>> webEndpoints = super.discoverEndpoints();
+		return merge(standardEndpoints.stream().map(this::convert)
+				.collect(Collectors.toList()), webEndpoints);
 	}
 
-	private List<EndpointInfo<WebEndpointOperationInfo>> discoverWebEndpoints() {
-		String[] endpointBeanNames = this.applicationContext
-				.getBeanNamesForAnnotation(WebEndpoint.class);
-		return Stream.of(endpointBeanNames).map((beanName) -> {
-			Class<?> beanType = this.applicationContext.getType(beanName);
-			WebEndpoint endpoint = AnnotatedElementUtils.findMergedAnnotation(beanType,
-					WebEndpoint.class);
-			Map<Method, WebEndpointOperationInfo> operationMethods = MethodIntrospector
-					.selectMethods(beanType,
-							(MetadataLookup<WebEndpointOperationInfo>) (
-									method) -> createEndpointOperationInfo(endpoint.id(),
-											beanName, method));
-			return new EndpointInfo<WebEndpointOperationInfo>(endpoint.id(),
-					operationMethods.values());
-		}).collect(Collectors.toList());
-	}
-
-	private WebEndpointOperationInfo createEndpointOperationInfo(String endpointId,
-			String beanName, Method method) {
-		EndpointOperation endpointOperation = AnnotatedElementUtils
-				.findMergedAnnotation(method, EndpointOperation.class);
-		if (endpointOperation == null) {
-			return null;
-		}
-		return new WebEndpointOperationInfo(endpointId, beanName, method,
-				endpointOperation.type());
-	}
-
+	/**
+	 * Merges two lists of {@link EndpointInfo EndpointInfos} into one. When a base
+	 * endpoint has the same id as an overriding endpoint, an operation on the overriding
+	 * endpoint will override an operation on the base endpoint with the same type.
+	 * @param baseEndpoints the base endpoints
+	 * @param overridingEndpoints the overriding endpoints
+	 * @return the merged list of endpoints
+	 */
 	private List<EndpointInfo<WebEndpointOperationInfo>> merge(
-			List<EndpointInfo<EndpointOperationInfo>> standardEndpoints,
-			List<EndpointInfo<WebEndpointOperationInfo>> webEndpoints) {
+			List<EndpointInfo<WebEndpointOperationInfo>> baseEndpoints,
+			List<EndpointInfo<WebEndpointOperationInfo>> overridingEndpoints) {
 		Map<String, EndpointInfo<WebEndpointOperationInfo>> endpointsById = new HashMap<>();
-		for (EndpointInfo<EndpointOperationInfo> standardEndpoint : standardEndpoints) {
-			endpointsById.put(standardEndpoint.getId(), convert(standardEndpoint));
+		for (EndpointInfo<WebEndpointOperationInfo> standardEndpoint : baseEndpoints) {
+			endpointsById.put(standardEndpoint.getId(), standardEndpoint);
 		}
-		for (EndpointInfo<WebEndpointOperationInfo> webEndpoint : webEndpoints) {
+		for (EndpointInfo<WebEndpointOperationInfo> webEndpoint : overridingEndpoints) {
 			endpointsById.merge(webEndpoint.getId(), webEndpoint, this::merge);
 		}
 		return new ArrayList<>(endpointsById.values());
 	}
 
+	/**
+	 * Convert an {@link EndpointOperationInfo} into a {@link WebEndpointOperationInfo}.
+	 * @param endpointInfo the {@code EndpointOperationInfo} to convert
+	 * @return the {@code WebEndpointOperationInfo}
+	 */
 	private EndpointInfo<WebEndpointOperationInfo> convert(
 			EndpointInfo<EndpointOperationInfo> endpointInfo) {
 		List<WebEndpointOperationInfo> webOperations = new ArrayList<>();
@@ -123,6 +110,15 @@ public class WebEndpointDiscoverer {
 				webOperations);
 	}
 
+	/**
+	 * Merges two {@link EndpointInfo EndpointInfos} into a single {@code EndpointInfo}.
+	 * When the two endpoints have an operation with the same {@link EndpointOperationType
+	 * type}, the operation on the {@code baseEndpoint} is overridden by the operation on
+	 * the {@code overridingEndpoint}.
+	 * @param baseEndpoint the base endpoint
+	 * @param overridingEndpoint the overriding endpoint
+	 * @return the merged endpoint
+	 */
 	private EndpointInfo<WebEndpointOperationInfo> merge(
 			EndpointInfo<WebEndpointOperationInfo> baseEndpoint,
 			EndpointInfo<WebEndpointOperationInfo> overridingEndpoint) {

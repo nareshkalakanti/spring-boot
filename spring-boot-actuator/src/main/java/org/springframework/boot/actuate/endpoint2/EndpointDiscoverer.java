@@ -16,67 +16,28 @@
 
 package org.springframework.boot.actuate.endpoint2;
 
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.MethodIntrospector;
-import org.springframework.core.MethodIntrospector.MetadataLookup;
-import org.springframework.core.annotation.AnnotatedElementUtils;
 
 /**
- * Discovers the {@link Endpoint Endpoints} in an {@link ApplicationContext}.
+ * An {@link AbstractEndpointDiscoverer} that discovers {@link Endpoint} beans.
  *
  * @author Andy Wilkinson
  * @since 2.0.0
  */
-public class EndpointDiscoverer {
-
-	private final ApplicationContext applicationContext;
-
-	/**
-	 * Creates a new {@link EndpointDiscoverer} that will discover endpoints in the given
-	 * {@code applicationContext}.
-	 *
-	 * @param applicationContext the application context
-	 */
-	public EndpointDiscoverer(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
-	}
+public class EndpointDiscoverer
+		extends AbstractEndpointDiscoverer<EndpointOperationInfo> {
 
 	/**
-	 * Discovers the endpoints.
-	 *
-	 * @return the discovered endpoints
+	 * Creates a new {@link EndpointDiscoverer} that will discover {@link Endpoint}
+	 * annotated beans in the given {@code applicationContext}.
+	 * @param applicationContext the applicationContext
 	 */
-	public List<EndpointInfo<EndpointOperationInfo>> discoverEndpoints() {
-		String[] endpointBeanNames = this.applicationContext
-				.getBeanNamesForAnnotation(Endpoint.class);
-		return Stream.of(endpointBeanNames).map((beanName) -> {
-			Class<?> beanType = this.applicationContext.getType(beanName);
-			Endpoint endpoint = AnnotatedElementUtils.findMergedAnnotation(beanType,
-					Endpoint.class);
-			Map<Method, EndpointOperationInfo> operationMethods = MethodIntrospector
-					.selectMethods(beanType,
-							(MetadataLookup<EndpointOperationInfo>) (
-									method) -> createEndpointOperationInfo(beanName,
-											method));
-			return new EndpointInfo<EndpointOperationInfo>(endpoint.id(),
-					operationMethods.values());
-		}).collect(Collectors.toList());
-	}
-
-	private EndpointOperationInfo createEndpointOperationInfo(String beanName,
-			Method method) {
-		EndpointOperation endpointOperation = AnnotatedElementUtils
-				.findMergedAnnotation(method, EndpointOperation.class);
-		if (endpointOperation == null) {
-			return null;
-		}
-		return new EndpointOperationInfo(beanName, method, endpointOperation.type());
+	EndpointDiscoverer(ApplicationContext applicationContext) {
+		super(Endpoint.class, applicationContext,
+				(endpointAttributes, operationAttributes, beanName, method) -> {
+					return new EndpointOperationInfo(beanName, method,
+							operationAttributes.getEnum("type"));
+				});
 	}
 
 }
