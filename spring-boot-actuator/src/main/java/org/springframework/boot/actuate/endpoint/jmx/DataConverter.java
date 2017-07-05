@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Andy Wilkinson
  * @author Phillip Webb
  */
-class DataConverter {
+public class DataConverter { // TODO
 
 	private final ObjectMapper objectMapper;
 
@@ -37,7 +37,7 @@ class DataConverter {
 
 	private final JavaType mapStringObject;
 
-	DataConverter(ObjectMapper objectMapper) {
+	public DataConverter(ObjectMapper objectMapper) {
 		this.objectMapper = (objectMapper == null ? new ObjectMapper() : objectMapper);
 		this.listObject = this.objectMapper.getTypeFactory()
 				.constructParametricType(List.class, Object.class);

@@ -18,6 +18,7 @@ org.springframework.boot.actuate.autoconfigure.TraceRepositoryAutoConfiguration,
 org.springframework.boot.actuate.autoconfigure.TraceWebFilterAutoConfiguration,\
 org.springframework.boot.actuate.cloudfoundry.CloudFoundryActuatorAutoConfiguration,\
 org.springframework.boot.actuate.endpoint2.jersey.JerseyEndpointAutoConfiguration,\
+org.springframework.boot.actuate.endpoint2.jmx.JmxEndpointAutoConfiguration,\
 org.springframework.boot.actuate.endpoint2.EndpointAutoConfiguration,\
 org.springframework.boot.actuate.endpoint2.mvc.MvcEndpointAutoConfiguration,\
 org.springframework.boot.actuate.endpoint2.web.WebEndpointAutoConfiguration,\

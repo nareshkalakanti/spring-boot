@@ -51,7 +51,7 @@ public class LoggersEndpoint {
 	}
 
 	@EndpointOperation(type = EndpointOperationType.READ)
-	public Map<String, Object> invoke() {
+	public Map<String, Object> getLogLevels() {
 		Collection<LoggerConfiguration> configurations = this.loggingSystem
 				.getLoggerConfigurations();
 		if (configurations == null) {
@@ -78,7 +78,7 @@ public class LoggersEndpoint {
 	}
 
 	@EndpointOperation(type = EndpointOperationType.PARTIAL_READ)
-	public LoggerLevels invoke(String name) {
+	public LoggerLevels getLogLevel(String name) {
 		Assert.notNull(name, "Name must not be null");
 		LoggerConfiguration configuration = this.loggingSystem
 				.getLoggerConfiguration(name);
