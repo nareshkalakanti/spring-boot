@@ -24,8 +24,6 @@ import org.springframework.boot.actuate.endpoint2.EndpointOperationType;
 import org.springframework.boot.actuate.endpoint2.HealthEndpoint;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 /**
  * A web specialization of {@link HealthEndpoint}.
@@ -37,27 +35,26 @@ class HealthWebEndpoint {
 
 	private final HealthEndpoint delegate;
 
-	private final Map<String, HttpStatus> statusMapping = new HashMap<>();
+	private final Map<String, Integer> statusMapping = new HashMap<>();
 
 	HealthWebEndpoint(HealthEndpoint delegate) {
 		this.delegate = delegate;
-		this.statusMapping.put(Status.DOWN.getCode(), HttpStatus.SERVICE_UNAVAILABLE);
-		this.statusMapping.put(Status.OUT_OF_SERVICE.getCode(),
-				HttpStatus.SERVICE_UNAVAILABLE);
+		this.statusMapping.put(Status.DOWN.getCode(), 503);
+		this.statusMapping.put(Status.OUT_OF_SERVICE.getCode(), 503);
 	}
 
 	@EndpointOperation(type = EndpointOperationType.READ)
-	public ResponseEntity<Health> health() {
+	public WebEndpointResponse<Health> health() {
 		Health health = this.delegate.invoke();
-		return new ResponseEntity<Health>(health, getStatus(health));
+		return new WebEndpointResponse<Health>(health, getStatus(health));
 	}
 
-	private HttpStatus getStatus(Health health) {
+	private Integer getStatus(Health health) {
 		String code = getUniformValue(health.getStatus().getCode());
 		if (code != null) {
 			return this.statusMapping.keySet().stream()
 					.filter((key) -> code.equals(getUniformValue(key)))
-					.map(this.statusMapping::get).findFirst().orElse(HttpStatus.OK);
+					.map(this.statusMapping::get).findFirst().orElse(200);
 		}
 		return null;
 	}

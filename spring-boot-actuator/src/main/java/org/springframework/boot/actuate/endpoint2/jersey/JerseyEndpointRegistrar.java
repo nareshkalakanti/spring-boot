@@ -34,8 +34,8 @@ import org.springframework.boot.actuate.endpoint2.EndpointInfo;
 import org.springframework.boot.actuate.endpoint2.EndpointOperationType;
 import org.springframework.boot.actuate.endpoint2.web.WebEndpointDiscoverer;
 import org.springframework.boot.actuate.endpoint2.web.WebEndpointOperationInfo;
+import org.springframework.boot.actuate.endpoint2.web.WebEndpointResponse;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -110,12 +110,12 @@ class JerseyEndpointRegistrar implements InitializingBean {
 		}
 
 		private Object convertIfNecessary(Object response) {
-			if (!(response instanceof ResponseEntity)) {
+			if (!(response instanceof WebEndpointResponse)) {
 				return response;
 			}
-			ResponseEntity<?> responseEntity = (ResponseEntity<?>) response;
-			return Response.status(responseEntity.getStatusCode().value())
-					.entity(responseEntity.getBody()).build();
+			WebEndpointResponse<?> webEndpointResponse = (WebEndpointResponse<?>) response;
+			return Response.status(webEndpointResponse.getStatus())
+					.entity(webEndpointResponse.getBody()).build();
 		}
 
 	}
