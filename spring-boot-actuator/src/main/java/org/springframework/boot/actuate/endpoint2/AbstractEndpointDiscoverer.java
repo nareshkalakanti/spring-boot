@@ -75,17 +75,18 @@ public abstract class AbstractEndpointDiscoverer<T extends EndpointOperationInfo
 			Class<?> beanType = this.applicationContext.getType(beanName);
 			AnnotationAttributes endpointAttributes = AnnotatedElementUtils
 					.getMergedAnnotationAttributes(beanType, this.annotationType);
-			Endpoint endpoint = AnnotatedElementUtils.findMergedAnnotation(beanType,
-					Endpoint.class);
 			Map<Method, T> operationMethods = MethodIntrospector.selectMethods(beanType,
 					(MetadataLookup<T>) (method) -> {
 				AnnotationAttributes operationAttributes = AnnotatedElementUtils
 						.getMergedAnnotationAttributes(method, EndpointOperation.class);
+				if (operationAttributes == null) {
+					return null;
+				}
 				return this.operationInfoFactory.createOperationInfo(endpointAttributes,
 						operationAttributes, beanName, method);
 			});
-
-			return new EndpointInfo<T>(endpoint.id(), operationMethods.values());
+			return new EndpointInfo<T>(endpointAttributes.getString("id"),
+					operationMethods.values());
 		}).collect(Collectors.toList());
 	}
 
