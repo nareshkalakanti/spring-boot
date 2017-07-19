@@ -44,6 +44,7 @@ import org.springframework.web.reactive.result.condition.RequestMethodsRequestCo
 import org.springframework.web.reactive.result.method.RequestMappingInfo;
 import org.springframework.web.reactive.result.method.RequestMappingInfoHandlerMapping;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 /**
  * A custom {@link RequestMappingInfoHandlerMapping} that makes web endpoints available
@@ -54,6 +55,8 @@ import org.springframework.web.server.ServerWebExchange;
  */
 public class WebEndpointReactiveHandlerMapping extends RequestMappingInfoHandlerMapping
 		implements InitializingBean {
+
+	private static final PathPatternParser pathPatternParser = new PathPatternParser();
 
 	private final Method handleRead = ReflectionUtils
 			.findMethod(ReadOperationHandler.class, "handle", ServerWebExchange.class);
@@ -116,7 +119,8 @@ public class WebEndpointReactiveHandlerMapping extends RequestMappingInfoHandler
 			WebEndpointOperation operationInfo) {
 		OperationRequestPredicate requestPredicate = operationInfo.getRequestPredicate();
 		return new RequestMappingInfo(null,
-				new PatternsRequestCondition(requestPredicate.getPath()),
+				new PatternsRequestCondition(
+						pathPatternParser.parse(requestPredicate.getPath())),
 				new RequestMethodsRequestCondition(
 						RequestMethod.valueOf(requestPredicate.getHttpMethod().name())),
 				null, null,
