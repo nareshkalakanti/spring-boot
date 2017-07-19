@@ -57,6 +57,7 @@ public class EndpointMBeanInfoAssemblerTests {
 				.containsOnly(entry("getAll", operation));
 		MBeanInfo mbeanInfo = endpointMBeanInfo.getMbeanInfo();
 		assertThat(mbeanInfo).isNotNull();
+		assertThat(mbeanInfo.getClassName()).isEqualTo(EndpointMBean.class.getName());
 		assertThat(mbeanInfo.getDescription())
 				.isEqualTo("MBean operations for endpoint test");
 		assertThat(mbeanInfo.getAttributes()).isEmpty();
@@ -87,6 +88,7 @@ public class EndpointMBeanInfoAssemblerTests {
 				.containsOnly(entry("update", operation));
 		MBeanInfo mbeanInfo = endpointMBeanInfo.getMbeanInfo();
 		assertThat(mbeanInfo).isNotNull();
+		assertThat(mbeanInfo.getClassName()).isEqualTo(EndpointMBean.class.getName());
 		assertThat(mbeanInfo.getDescription())
 				.isEqualTo("MBean operations for endpoint another");
 		assertThat(mbeanInfo.getAttributes()).isEmpty();

@@ -62,15 +62,11 @@ class EndpointMBeanInfoAssembler {
 		Map<String, JmxEndpointOperation> operationsInfo = new LinkedHashMap<>();
 		operationsMapping.forEach((name, t) -> operationsInfo.put(name, t.operation));
 
-		MBeanInfo info = new ModelMBeanInfoSupport(getClassName(endpointInfo),
+		MBeanInfo info = new ModelMBeanInfoSupport(EndpointMBean.class.getName(),
 				getDescription(endpointInfo), new ModelMBeanAttributeInfo[0],
 				new ModelMBeanConstructorInfo[0], operationsMBeanInfo,
 				new ModelMBeanNotificationInfo[0]);
 		return new EndpointMBeanInfo(endpointInfo.getId(), info, operationsInfo);
-	}
-
-	private String getClassName(EndpointInfo<?> endpointInfo) {
-		return endpointInfo.getId();
 	}
 
 	private String getDescription(EndpointInfo<?> endpointInfo) {
