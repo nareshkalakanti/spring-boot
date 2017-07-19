@@ -7,13 +7,13 @@
 		<disallow pkg="org.springframework.http" />
 		<disallow pkg="org.springframework.web" />
 		<subpackage name="web">
+			<allow pkg="org.springframework.http" />
+			<allow pkg="org.springframework.web" />
 			<subpackage name="mvc">
-				<allow pkg="org.springframework.http" />
-				<allow pkg="org.springframework.web" />
+				<disallow pkg="org.springframework.web.reactive" />
 			</subpackage>
 			<subpackage name="reactive">
-				<allow pkg="org.springframework.http" />
-				<allow pkg="org.springframework.web.reactive" />
+				<disallow pkg="org.springframework.web.servlet" />
 			</subpackage>
 		</subpackage>
 	</subpackage>
