@@ -84,9 +84,8 @@ class EndpointMBeanInfoAssembler {
 			String name = operationInfo.getOperationName();
 			ModelMBeanOperationInfo mBeanOperationInfo = new ModelMBeanOperationInfo(
 					operationInfo.getOperationName(), operationInfo.getDescription(),
-					getMBeanParameterInfos(operationInfo),
-					this.responseMapper.mapResponseType(
-							operationInfo.getOutputType()).getName(),
+					getMBeanParameterInfos(operationInfo), this.responseMapper
+							.mapResponseType(operationInfo.getOutputType()).getName(),
 					mapOperationType(operationInfo.getType()));
 			operationInfos.put(name,
 					new OperationInfos(mBeanOperationInfo, operationInfo));

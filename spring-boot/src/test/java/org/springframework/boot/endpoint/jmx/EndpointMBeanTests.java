@@ -129,8 +129,8 @@ public class EndpointMBeanTests {
 				assertOperation(operations.get("getOne"), String.class,
 						MBeanOperationInfo.INFO, new Class<?>[] { String.class });
 				assertOperation(operations.get("update"), Void.TYPE,
-						MBeanOperationInfo.ACTION, new Class<?>[] { String.class,
-								String.class });
+						MBeanOperationInfo.ACTION,
+						new Class<?>[] { String.class, String.class });
 			}
 			catch (Exception ex) {
 				throw new AssertionError("Failed to retrieve MBeanInfo of FooEndpoint",
@@ -139,8 +139,8 @@ public class EndpointMBeanTests {
 		});
 	}
 
-	private void assertOperation(MBeanOperationInfo operation,
-			Class<?> returnType, int impact, Class<?>[] types) {
+	private void assertOperation(MBeanOperationInfo operation, Class<?> returnType,
+			int impact, Class<?>[] types) {
 		assertThat(operation.getReturnType()).isEqualTo(returnType.getName());
 		assertThat(operation.getImpact()).isEqualTo(impact);
 		MBeanParameterInfo[] signature = operation.getSignature();

@@ -68,21 +68,25 @@ public class EndpointMBeanRegistrar {
 		Assert.notNull(endpoint, "Endpoint must not be null");
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug(String.format("Registering endpoint with id '%s' to "
-						+ "the JMX domain", endpoint.getEndpointId()));
+				logger.debug(String.format(
+						"Registering endpoint with id '%s' to " + "the JMX domain",
+						endpoint.getEndpointId()));
 			}
 			ObjectName objectName = this.objectNameFactory.generate(endpoint);
 			this.mBeanServer.registerMBean(endpoint, objectName);
 			return objectName;
 		}
 		catch (MalformedObjectNameException ex) {
-			throw new IllegalStateException(String.format("Invalid ObjectName for "
-					+ "endpoint with id '%s'", endpoint.getEndpointId()), ex);
+			throw new IllegalStateException(
+					String.format("Invalid ObjectName for " + "endpoint with id '%s'",
+							endpoint.getEndpointId()),
+					ex);
 		}
 		catch (Exception ex) {
-			throw new MBeanExportException(String.format(
-					"Failed to register MBean for endpoint with id '%s'",
-					endpoint.getEndpointId()), ex);
+			throw new MBeanExportException(
+					String.format("Failed to register MBean for endpoint with id '%s'",
+							endpoint.getEndpointId()),
+					ex);
 		}
 	}
 
@@ -105,8 +109,10 @@ public class EndpointMBeanRegistrar {
 			return false;
 		}
 		catch (MBeanRegistrationException ex) {
-			throw new JmxException(String.format("Failed to unregister MBean with"
-					+ "ObjectName '%s'", objectName), ex);
+			throw new JmxException(
+					String.format("Failed to unregister MBean with" + "ObjectName '%s'",
+							objectName),
+					ex);
 		}
 	}
 

@@ -62,7 +62,8 @@ public class AnnotationEndpointDiscovererTests {
 			Map<String, EndpointInfo<TestEndpointOperation>> endpoints = mapEndpoints(
 					new TestAnnotationEndpointDiscoverer(context).discoverEndpoints());
 			assertThat(endpoints).containsOnlyKeys("test");
-			Map<Method, TestEndpointOperation> operations = mapOperations(endpoints.get("test"));
+			Map<Method, TestEndpointOperation> operations = mapOperations(
+					endpoints.get("test"));
 			assertThat(operations).hasSize(3);
 			assertThat(operations).containsKeys(
 					ReflectionUtils.findMethod(TestEndpoint.class, "getAll"),
@@ -79,7 +80,8 @@ public class AnnotationEndpointDiscovererTests {
 			Map<String, EndpointInfo<TestEndpointOperation>> endpoints = mapEndpoints(
 					new TestAnnotationEndpointDiscoverer(context).discoverEndpoints());
 			assertThat(endpoints).containsOnlyKeys("test");
-			Map<Method, TestEndpointOperation> operations = mapOperations(endpoints.get("test"));
+			Map<Method, TestEndpointOperation> operations = mapOperations(
+					endpoints.get("test"));
 			assertThat(operations).hasSize(4);
 			assertThat(operations).containsKeys(
 					ReflectionUtils.findMethod(TestEndpoint.class, "getAll"),
@@ -107,52 +109,62 @@ public class AnnotationEndpointDiscovererTests {
 		load(TestEndpointConfiguration.class, (context) -> {
 			Map<String, EndpointInfo<TestEndpointOperation>> endpoints = mapEndpoints(
 					new TestAnnotationEndpointDiscoverer(context,
-							(endpointId) -> new CachingConfiguration(0)).discoverEndpoints());
+							(endpointId) -> new CachingConfiguration(0))
+									.discoverEndpoints());
 			assertThat(endpoints).containsOnlyKeys("test");
-			Map<Method, TestEndpointOperation> operations = mapOperations(endpoints.get("test"));
+			Map<Method, TestEndpointOperation> operations = mapOperations(
+					endpoints.get("test"));
 			assertThat(operations).hasSize(3);
-			operations.values().forEach(operation -> assertThat(operation
-					.getOperationInvoker()).isNotInstanceOf(CachingOperationInvoker.class));
+			operations.values()
+					.forEach(operation -> assertThat(operation.getOperationInvoker())
+							.isNotInstanceOf(CachingOperationInvoker.class));
 		});
 	}
 
 	@Test
 	public void endpointMainReadOperationIsNotCachedWithNonMatchingId() {
-		Function<String, CachingConfiguration> cachingConfigurationFactory = (endpointId) ->
-				(endpointId.equals("foo") ? new CachingConfiguration(500) : new CachingConfiguration(0));
+		Function<String, CachingConfiguration> cachingConfigurationFactory = (
+				endpointId) -> (endpointId.equals("foo") ? new CachingConfiguration(500)
+						: new CachingConfiguration(0));
 		load(TestEndpointConfiguration.class, (context) -> {
 			Map<String, EndpointInfo<TestEndpointOperation>> endpoints = mapEndpoints(
 					new TestAnnotationEndpointDiscoverer(context,
 							cachingConfigurationFactory).discoverEndpoints());
 			assertThat(endpoints).containsOnlyKeys("test");
-			Map<Method, TestEndpointOperation> operations = mapOperations(endpoints.get("test"));
+			Map<Method, TestEndpointOperation> operations = mapOperations(
+					endpoints.get("test"));
 			assertThat(operations).hasSize(3);
-			operations.values().forEach(operation -> assertThat(operation
-					.getOperationInvoker()).isNotInstanceOf(CachingOperationInvoker.class));
+			operations.values()
+					.forEach(operation -> assertThat(operation.getOperationInvoker())
+							.isNotInstanceOf(CachingOperationInvoker.class));
 		});
 	}
 
 	@Test
 	public void endpointMainReadOperationIsCachedWithMatchingId() {
-		Function<String, CachingConfiguration> cachingConfigurationFactory = (endpointId) ->
-				(endpointId.equals("test") ? new CachingConfiguration(500) : new CachingConfiguration(0));
+		Function<String, CachingConfiguration> cachingConfigurationFactory = (
+				endpointId) -> (endpointId.equals("test") ? new CachingConfiguration(500)
+						: new CachingConfiguration(0));
 		load(TestEndpointConfiguration.class, (context) -> {
 			Map<String, EndpointInfo<TestEndpointOperation>> endpoints = mapEndpoints(
 					new TestAnnotationEndpointDiscoverer(context,
 							cachingConfigurationFactory).discoverEndpoints());
 			assertThat(endpoints).containsOnlyKeys("test");
-			Map<Method, TestEndpointOperation> operations = mapOperations(endpoints.get("test"));
-			OperationInvoker getAllOperationInvoker = operations.get(
-					ReflectionUtils.findMethod(TestEndpoint.class, "getAll")).getOperationInvoker();
-			assertThat(getAllOperationInvoker).isInstanceOf(CachingOperationInvoker.class);
+			Map<Method, TestEndpointOperation> operations = mapOperations(
+					endpoints.get("test"));
+			OperationInvoker getAllOperationInvoker = operations
+					.get(ReflectionUtils.findMethod(TestEndpoint.class, "getAll"))
+					.getOperationInvoker();
+			assertThat(getAllOperationInvoker)
+					.isInstanceOf(CachingOperationInvoker.class);
 			assertThat(((CachingOperationInvoker) getAllOperationInvoker).getTimeToLive())
 					.isEqualTo(500);
 			assertThat(operations.get(ReflectionUtils.findMethod(TestEndpoint.class,
-					"getOne", String.class)).getOperationInvoker()).isNotInstanceOf(
-					CachingOperationInvoker.class);
+					"getOne", String.class)).getOperationInvoker())
+							.isNotInstanceOf(CachingOperationInvoker.class);
 			assertThat(operations.get(ReflectionUtils.findMethod(TestEndpoint.class,
 					"update", String.class, String.class)).getOperationInvoker())
-					.isNotInstanceOf(CachingOperationInvoker.class);
+							.isNotInstanceOf(CachingOperationInvoker.class);
 		});
 	}
 
@@ -160,8 +172,8 @@ public class AnnotationEndpointDiscovererTests {
 			Collection<EndpointInfo<TestEndpointOperation>> endpoints) {
 		Map<String, EndpointInfo<TestEndpointOperation>> endpointById = new LinkedHashMap<>();
 		endpoints.forEach(endpoint -> {
-			EndpointInfo<TestEndpointOperation> existing = endpointById.put(
-					endpoint.getId(), endpoint);
+			EndpointInfo<TestEndpointOperation> existing = endpointById
+					.put(endpoint.getId(), endpoint);
 			if (existing != null) {
 				throw new AssertionError(String.format(
 						"Found endpoints with duplicate id '%s'", endpoint.getId()));
@@ -174,8 +186,8 @@ public class AnnotationEndpointDiscovererTests {
 			EndpointInfo<TestEndpointOperation> endpoint) {
 		Map<Method, TestEndpointOperation> operationByMethod = new HashMap<>();
 		endpoint.getOperations().forEach((operation) -> {
-			EndpointOperation existing = operationByMethod.put(
-					operation.getOperationMethod(), operation);
+			EndpointOperation existing = operationByMethod
+					.put(operation.getOperationMethod(), operation);
 			if (existing != null) {
 				throw new AssertionError(String.format(
 						"Found endpoint with duplicate operation method '%s'",

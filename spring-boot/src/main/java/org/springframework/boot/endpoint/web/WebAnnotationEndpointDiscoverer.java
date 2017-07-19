@@ -89,8 +89,8 @@ public class WebAnnotationEndpointDiscoverer extends
 	private void verifyThatOperationsHaveDistinctPredicates(
 			Collection<EndpointInfoDescriptor<WebEndpointOperation, OperationRequestPredicate>> endpointDescriptors) {
 		List<List<WebEndpointOperation>> clashes = new ArrayList<>();
-		endpointDescriptors.forEach(descriptor ->
-				clashes.addAll(descriptor.findDuplicateOperations().values()));
+		endpointDescriptors.forEach(descriptor -> clashes
+				.addAll(descriptor.findDuplicateOperations().values()));
 		if (!clashes.isEmpty()) {
 			StringBuilder message = new StringBuilder();
 			message.append(String.format(
@@ -98,8 +98,8 @@ public class WebAnnotationEndpointDiscoverer extends
 			clashes.forEach((clash) -> {
 				message.append("    ").append(clash.get(0).getRequestPredicate())
 						.append(String.format(":%n"));
-				clash.forEach((operation) ->
-						message.append("        ").append(String.format("%s%n", operation)));
+				clash.forEach((operation) -> message.append("        ")
+						.append(String.format("%s%n", operation)));
 			});
 			throw new IllegalStateException(message.toString());
 		}
@@ -120,8 +120,7 @@ public class WebAnnotationEndpointDiscoverer extends
 
 		private final Collection<String> producedMediaTypes;
 
-		private WebEndpointOperationFactory(
-				OperationParameterMapper parameterMapper,
+		private WebEndpointOperationFactory(OperationParameterMapper parameterMapper,
 				String basePath, Collection<String> consumedMediaTypes,
 				Collection<String> producedMediaTypes) {
 			this.parameterMapper = parameterMapper;
@@ -154,13 +153,15 @@ public class WebAnnotationEndpointDiscoverer extends
 			if (timeToLive > 0) {
 				invoker = new CachingOperationInvoker(invoker, timeToLive);
 			}
-			return new WebEndpointOperation(type, invoker,
-					determineBlocking(method), requestPredicate);
+			return new WebEndpointOperation(type, invoker, determineBlocking(method),
+					requestPredicate);
 		}
 
 		private String determinePath(String endpointId, Method operationMethod) {
 			StringBuilder path = new StringBuilder(this.basePath + endpointId);
-			Stream.of(operationMethod.getParameters()).filter((parameter) -> parameter.getAnnotation(Selector.class) != null)
+			Stream.of(operationMethod.getParameters())
+					.filter((
+							parameter) -> parameter.getAnnotation(Selector.class) != null)
 					.map((parameter) -> "/{" + parameter.getName() + "}")
 					.forEach(path::append);
 			return path.toString();
