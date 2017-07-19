@@ -31,14 +31,12 @@ public class OperationRequestPredicateTests {
 
 	@Test
 	public void predicatesWithIdenticalPathsAreEqual() {
-		assertThat(predicateWithPath("/path"))
-				.isEqualTo(predicateWithPath("/path"));
+		assertThat(predicateWithPath("/path")).isEqualTo(predicateWithPath("/path"));
 	}
 
 	@Test
 	public void predicatesWithDifferentPathsAreNotEqual() {
-		assertThat(predicateWithPath("/one"))
-				.isNotEqualTo(predicateWithPath("/two"));
+		assertThat(predicateWithPath("/one")).isNotEqualTo(predicateWithPath("/two"));
 	}
 
 	@Test

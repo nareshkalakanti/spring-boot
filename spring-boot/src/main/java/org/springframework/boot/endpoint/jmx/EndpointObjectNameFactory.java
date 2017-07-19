@@ -34,7 +34,6 @@ public interface EndpointObjectNameFactory {
 	 * @return the {@link ObjectName} to use for the endpoint
 	 * @throws MalformedObjectNameException if the object name is invalid
 	 */
-	ObjectName generate(EndpointMBean mBean)
-			throws MalformedObjectNameException;
+	ObjectName generate(EndpointMBean mBean) throws MalformedObjectNameException;
 
 }

@@ -86,8 +86,8 @@ public class EndpointMBeanRegistrarTests {
 		EndpointMBean endpointMBean = mock(EndpointMBean.class);
 		given(endpointMBean.getEndpointId()).willReturn("test");
 		EndpointObjectNameFactory factory = mock(EndpointObjectNameFactory.class);
-		given(factory.generate(endpointMBean)).willThrow(
-				new MalformedObjectNameException());
+		given(factory.generate(endpointMBean))
+				.willThrow(new MalformedObjectNameException());
 		EndpointMBeanRegistrar registrar = new EndpointMBeanRegistrar(this.mBeanServer,
 				factory);
 		this.thrown.expect(IllegalStateException.class);

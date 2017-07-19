@@ -87,8 +87,8 @@ public class WebAnnotationEndpointDiscovererTests {
 	@Test
 	public void onlyWebEndpointsAreDiscovered() {
 		load(MultipleEndpointsConfiguration.class, discoverer -> {
-			Map<String, EndpointInfo<WebEndpointOperation>> endpoints = mapEndpoints(discoverer
-					.discoverEndpoints());
+			Map<String, EndpointInfo<WebEndpointOperation>> endpoints = mapEndpoints(
+					discoverer.discoverEndpoints());
 			assertThat(endpoints).containsOnlyKeys("test");
 		});
 	}
@@ -96,8 +96,8 @@ public class WebAnnotationEndpointDiscovererTests {
 	@Test
 	public void oneOperationIsDiscoveredWhenExtensionOverridesOperation() {
 		load(OverriddenOperationWebEndpointExtensionConfiguration.class, (discoverer) -> {
-			Map<String, EndpointInfo<WebEndpointOperation>> endpoints = mapEndpoints(discoverer
-					.discoverEndpoints());
+			Map<String, EndpointInfo<WebEndpointOperation>> endpoints = mapEndpoints(
+					discoverer.discoverEndpoints());
 			assertThat(endpoints).containsOnlyKeys("test");
 			EndpointInfo<WebEndpointOperation> endpoint = endpoints.get("test");
 			assertThat(requestPredicates(endpoint)).has(requestPredicates(
@@ -109,8 +109,8 @@ public class WebAnnotationEndpointDiscovererTests {
 	@Test
 	public void twoOperationsAreDiscoveredWhenExtensionAddsOperation() {
 		load(AdditionalOperationWebEndpointConfiguration.class, (discoverer) -> {
-			Map<String, EndpointInfo<WebEndpointOperation>> endpoints = mapEndpoints(discoverer
-					.discoverEndpoints());
+			Map<String, EndpointInfo<WebEndpointOperation>> endpoints = mapEndpoints(
+					discoverer.discoverEndpoints());
 			assertThat(endpoints).containsOnlyKeys("test");
 			EndpointInfo<WebEndpointOperation> endpoint = endpoints.get("test");
 			assertThat(requestPredicates(endpoint)).has(requestPredicates(
@@ -187,18 +187,21 @@ public class WebAnnotationEndpointDiscovererTests {
 
 	@Test
 	public void endpointMainReadOperationIsCachedWithMatchingId() {
-		load((id) -> new CachingConfiguration(500), TestEndpointConfiguration.class, (discoverer) -> {
-			Map<String, EndpointInfo<WebEndpointOperation>> endpoints = mapEndpoints(discoverer
-					.discoverEndpoints());
-			assertThat(endpoints).containsOnlyKeys("test");
-			EndpointInfo<WebEndpointOperation> endpoint = endpoints.get("test");
-			assertThat(endpoint.getOperations()).hasSize(1);
-			OperationInvoker operationInvoker = endpoint.getOperations().iterator()
-					.next().getOperationInvoker();
-			assertThat(operationInvoker).isInstanceOf(CachingOperationInvoker.class);
-			assertThat(((CachingOperationInvoker) operationInvoker).getTimeToLive())
-					.isEqualTo(500);
-		});
+		load((id) -> new CachingConfiguration(500), TestEndpointConfiguration.class,
+				(discoverer) -> {
+					Map<String, EndpointInfo<WebEndpointOperation>> endpoints = mapEndpoints(
+							discoverer.discoverEndpoints());
+					assertThat(endpoints).containsOnlyKeys("test");
+					EndpointInfo<WebEndpointOperation> endpoint = endpoints.get("test");
+					assertThat(endpoint.getOperations()).hasSize(1);
+					OperationInvoker operationInvoker = endpoint.getOperations()
+							.iterator().next().getOperationInvoker();
+					assertThat(operationInvoker)
+							.isInstanceOf(CachingOperationInvoker.class);
+					assertThat(
+							((CachingOperationInvoker) operationInvoker).getTimeToLive())
+									.isEqualTo(500);
+				});
 	}
 
 	@Test
@@ -255,8 +258,7 @@ public class WebAnnotationEndpointDiscovererTests {
 
 	private void load(String basePath,
 			Function<String, CachingConfiguration> cachingConfigurationFactory,
-			Class<?> configuration,
-			Consumer<WebAnnotationEndpointDiscoverer> consumer) {
+			Class<?> configuration, Consumer<WebAnnotationEndpointDiscoverer> consumer) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				configuration);
 		try {
@@ -646,11 +648,11 @@ public class WebAnnotationEndpointDiscovererTests {
 		private boolean matches(OperationRequestPredicate predicate) {
 			return (this.path == null || this.path.equals(predicate.getPath()))
 					&& (this.httpMethod == null
-					|| this.httpMethod == predicate.getHttpMethod())
+							|| this.httpMethod == predicate.getHttpMethod())
 					&& (this.produces == null || this.produces
-					.equals(new ArrayList<>(predicate.getProduces())))
+							.equals(new ArrayList<>(predicate.getProduces())))
 					&& (this.consumes == null || this.consumes
-					.equals(new ArrayList<>(predicate.getConsumes())));
+							.equals(new ArrayList<>(predicate.getConsumes())));
 		}
 
 		@Override

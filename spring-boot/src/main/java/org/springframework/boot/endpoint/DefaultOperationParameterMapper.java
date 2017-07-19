@@ -20,14 +20,13 @@ import org.springframework.boot.context.properties.bind.convert.BinderConversion
 import org.springframework.core.convert.ConversionService;
 
 /**
- * A default {@link OperationParameterMapper} that uses a {@link ConversionService}
- * to convert a parameter value if necessary.
+ * A default {@link OperationParameterMapper} that uses a {@link ConversionService} to
+ * convert a parameter value if necessary.
  *
  * @author Stephane Nicoll
  * @since 2.0.0
  */
-public class DefaultOperationParameterMapper
-		implements OperationParameterMapper {
+public class DefaultOperationParameterMapper implements OperationParameterMapper {
 
 	private final ConversionService conversionService;
 
@@ -41,8 +40,7 @@ public class DefaultOperationParameterMapper
 
 	@Override
 	public <T> T mapParameter(Object input, Class<T> parameterType) {
-		if (input == null
-				|| parameterType.isAssignableFrom(input.getClass())) {
+		if (input == null || parameterType.isAssignableFrom(input.getClass())) {
 			return parameterType.cast(input);
 		}
 		return this.conversionService.convert(input, parameterType);

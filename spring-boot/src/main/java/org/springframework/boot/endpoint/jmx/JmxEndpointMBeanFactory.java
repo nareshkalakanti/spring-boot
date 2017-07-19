@@ -57,8 +57,7 @@ public class JmxEndpointMBeanFactory {
 		return endpoints.stream().map((endpointInfo) -> {
 			EndpointMBeanInfo endpointMBeanInfo = this.assembler
 					.createEndpointMBeanInfo(endpointInfo);
-			return new EndpointMBean(this.resultMapper::mapResponse,
-					endpointMBeanInfo);
+			return new EndpointMBean(this.resultMapper::mapResponse, endpointMBeanInfo);
 		}).collect(Collectors.toList());
 	}
 

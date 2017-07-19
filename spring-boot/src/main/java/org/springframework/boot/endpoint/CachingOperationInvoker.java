@@ -67,7 +67,6 @@ public class CachingOperationInvoker implements OperationInvoker {
 		return cached.getResponse();
 	}
 
-
 	/**
 	 * A cached response that encapsulates the response itself and the time at which it
 	 * was created.
