@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.endpoint.EndpointInfo;
 import org.springframework.boot.endpoint.OperationInvoker;
+import org.springframework.boot.endpoint.ParameterMappingException;
 import org.springframework.boot.endpoint.web.OperationRequestPredicate;
 import org.springframework.boot.endpoint.web.WebEndpointOperation;
 import org.springframework.boot.endpoint.web.WebEndpointResponse;
@@ -168,7 +169,12 @@ public class WebEndpointServletHandlerMapping extends RequestMappingInfoHandlerM
 			}
 			request.getParameterMap().forEach((name, values) -> arguments.put(name,
 					values.length == 1 ? values[0] : Arrays.asList(values)));
-			return handleResult(this.operationInvoker.invoke(arguments), httpMethod);
+			try {
+				return handleResult(this.operationInvoker.invoke(arguments), httpMethod);
+			}
+			catch (ParameterMappingException ex) {
+				return new ResponseEntity<Void>(HttpStatus.BAD_REQUEST);
+			}
 		}
 
 		private Object handleResult(Object result, HttpMethod httpMethod) {

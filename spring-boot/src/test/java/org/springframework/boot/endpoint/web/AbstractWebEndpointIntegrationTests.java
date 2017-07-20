@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import org.junit.Test;
 
 import org.springframework.boot.endpoint.CachingConfiguration;
-import org.springframework.boot.endpoint.DefaultOperationParameterMapper;
+import org.springframework.boot.endpoint.ConversionServiceOperationParameterMapper;
 import org.springframework.boot.endpoint.Endpoint;
 import org.springframework.boot.endpoint.OperationParameterMapper;
 import org.springframework.boot.endpoint.ReadOperation;
@@ -98,9 +98,9 @@ public abstract class AbstractWebEndpointIntegrationTests<T extends Configurable
 	@Test
 	public void readOperationWithSingleQueryParametersAndMultipleValues() {
 		load(QueryEndpointConfiguration.class, client -> {
-			client.get().uri("/query?one=1&two=2&two=2")
+			client.get().uri("/query?one=1&one=1&two=2")
 					.accept(MediaType.APPLICATION_JSON).exchange().expectStatus().isOk()
-					.expectBody().jsonPath("query").isEqualTo("1 2,2");
+					.expectBody().jsonPath("query").isEqualTo("1,1 2");
 		});
 	}
 
@@ -119,6 +119,14 @@ public abstract class AbstractWebEndpointIntegrationTests<T extends Configurable
 			client.get().uri("/query?one=1&two=2&two=2")
 					.accept(MediaType.APPLICATION_JSON).exchange().expectStatus().isOk()
 					.expectBody().jsonPath("query").isEqualTo("1 [2, 2]");
+		});
+	}
+
+	@Test
+	public void readOperationWithMappingFailureProducesBadRequestResponse() {
+		load(QueryEndpointConfiguration.class, client -> {
+			client.get().uri("/query?two=two").accept(MediaType.APPLICATION_JSON)
+					.exchange().expectStatus().isBadRequest();
 		});
 	}
 
@@ -238,7 +246,7 @@ public abstract class AbstractWebEndpointIntegrationTests<T extends Configurable
 		@Bean
 		public WebAnnotationEndpointDiscoverer webEndpointDiscoverer(
 				ApplicationContext applicationContext) {
-			OperationParameterMapper parameterMapper = new DefaultOperationParameterMapper(
+			OperationParameterMapper parameterMapper = new ConversionServiceOperationParameterMapper(
 					DefaultConversionService.getSharedInstance());
 			return new WebAnnotationEndpointDiscoverer(applicationContext,
 					parameterMapper, (id) -> new CachingConfiguration(0), "endpoints",
@@ -357,7 +365,7 @@ public abstract class AbstractWebEndpointIntegrationTests<T extends Configurable
 	static class QueryEndpoint {
 
 		@ReadOperation
-		public Map<String, String> query(String one, String two) {
+		public Map<String, String> query(String one, Integer two) {
 			return Collections.singletonMap("query", one + " " + two);
 		}
 

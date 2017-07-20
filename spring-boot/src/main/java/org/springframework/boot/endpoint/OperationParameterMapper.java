@@ -30,6 +30,7 @@ public interface OperationParameterMapper {
 	 * @param parameterType the requested type of the parameter
 	 * @return a value suitable for that parameter
 	 * @param <T> the actual type of the parameter
+	 * @throws ParameterMappingException when a mapping failure occurs
 	 */
 	<T> T mapParameter(Object input, Class<T> parameterType);
 

@@ -25,6 +25,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.endpoint.EndpointInfo;
 import org.springframework.boot.endpoint.EndpointOperationType;
 import org.springframework.boot.endpoint.OperationInvoker;
+import org.springframework.boot.endpoint.ParameterMappingException;
 import org.springframework.boot.endpoint.web.OperationRequestPredicate;
 import org.springframework.boot.endpoint.web.WebEndpointOperation;
 import org.springframework.boot.endpoint.web.WebEndpointResponse;
@@ -167,8 +168,13 @@ public class WebEndpointReactiveHandlerMapping extends RequestMappingInfoHandler
 			exchange.getRequest().getQueryParams().forEach((name, values) -> {
 				arguments.put(name, values.size() == 1 ? values.get(0) : values);
 			});
-			return handleResult(this.operationInvoker.invoke(arguments),
-					exchange.getRequest().getMethod());
+			try {
+				return handleResult(this.operationInvoker.invoke(arguments),
+						exchange.getRequest().getMethod());
+			}
+			catch (ParameterMappingException ex) {
+				return new ResponseEntity<Void>(HttpStatus.BAD_REQUEST);
+			}
 		}
 
 		private ResponseEntity<?> handleResult(Object result, HttpMethod httpMethod) {
