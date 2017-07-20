@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -167,6 +168,9 @@ public class JmxAnnotationEndpointDiscoverer
 
 		private Class<?> mapParameterType(Class<?> parameter) {
 			if (parameter.isEnum()) {
+				return String.class;
+			}
+			if (Date.class.isAssignableFrom(parameter)) {
 				return String.class;
 			}
 			if (parameter.getName().startsWith("java.")) {
