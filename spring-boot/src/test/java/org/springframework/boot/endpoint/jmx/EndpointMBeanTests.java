@@ -42,7 +42,7 @@ import org.junit.Test;
 import reactor.core.publisher.Mono;
 
 import org.springframework.boot.endpoint.CachingConfiguration;
-import org.springframework.boot.endpoint.DefaultOperationParameterMapper;
+import org.springframework.boot.endpoint.ConversionServiceOperationParameterMapper;
 import org.springframework.boot.endpoint.Endpoint;
 import org.springframework.boot.endpoint.ReadOperation;
 import org.springframework.boot.endpoint.WriteOperation;
@@ -274,7 +274,7 @@ public class EndpointMBeanTests {
 		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				configuration)) {
 			consumer.accept(new JmxAnnotationEndpointDiscoverer(context,
-					new DefaultOperationParameterMapper(
+					new ConversionServiceOperationParameterMapper(
 							DefaultConversionService.getSharedInstance()),
 					(id) -> new CachingConfiguration(0)));
 		}

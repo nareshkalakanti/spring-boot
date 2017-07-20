@@ -35,6 +35,7 @@ import org.glassfish.jersey.server.model.Resource.Builder;
 
 import org.springframework.boot.endpoint.EndpointInfo;
 import org.springframework.boot.endpoint.OperationInvoker;
+import org.springframework.boot.endpoint.ParameterMappingException;
 import org.springframework.boot.endpoint.web.OperationRequestPredicate;
 import org.springframework.boot.endpoint.web.WebEndpointOperation;
 import org.springframework.boot.endpoint.web.WebEndpointResponse;
@@ -90,7 +91,7 @@ public class JerseyEndpointResourceFactory {
 
 		@SuppressWarnings("unchecked")
 		@Override
-		public Object apply(ContainerRequestContext data) {
+		public Response apply(ContainerRequestContext data) {
 			Map<String, Object> arguments = new HashMap<>();
 			if (this.readBody) {
 				Map<String, Object> body = ((ContainerRequest) data)
@@ -101,8 +102,13 @@ public class JerseyEndpointResourceFactory {
 			}
 			arguments.putAll(extractPathParmeters(data));
 			arguments.putAll(extractQueryParmeters(data));
-			return convertToJaxRsResponse(this.operationInvoker.invoke(arguments),
-					data.getRequest().getMethod());
+			try {
+				return convertToJaxRsResponse(this.operationInvoker.invoke(arguments),
+						data.getRequest().getMethod());
+			}
+			catch (ParameterMappingException ex) {
+				return Response.status(Status.BAD_REQUEST).build();
+			}
 		}
 
 		private Map<String, Object> extractPathParmeters(
