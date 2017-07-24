@@ -48,7 +48,7 @@ public final class ConditionMessage {
 	}
 
 	private ConditionMessage(ConditionMessage prior, String message) {
-		this.message = (prior.isEmpty() ? message : prior + "; " + message);
+		this.message = (prior.isEmpty() ? message : prior + "\n      - " + message);
 	}
 
 	/**
@@ -393,8 +393,14 @@ public final class ConditionMessage {
 				message.append(" " + this.plural);
 			}
 			if (items != null && !items.isEmpty()) {
-				message.append(
-						" " + StringUtils.collectionToDelimitedString(items, ", "));
+				if (style == Style.LIST) {
+					message.append(
+							":\n" + StringUtils.collectionToDelimitedString(items, ""));
+				}
+				else {
+					message.append(
+							" " + StringUtils.collectionToDelimitedString(items, ", "));
+				}
 			}
 			return this.condition.because(message.toString());
 		}
@@ -417,6 +423,13 @@ public final class ConditionMessage {
 			@Override
 			protected String applyToItem(Object item) {
 				return (item == null ? null : "'" + item + "'");
+			}
+		},
+
+		LIST {
+			@Override
+			protected String applyToItem(Object item) {
+				return (item == null ? null : "         - " + item + "\n");
 			}
 		};
 

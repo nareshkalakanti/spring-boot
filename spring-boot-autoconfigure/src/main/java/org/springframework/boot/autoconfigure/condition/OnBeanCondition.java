@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.HierarchicalBeanFactory;
@@ -84,8 +85,12 @@ class OnBeanCondition extends SpringBootCondition implements ConfigurationCondit
 						.forCondition(ConditionalOnBean.class, spec).because(reason));
 			}
 			matchMessage = matchMessage.andCondition(ConditionalOnBean.class, spec)
-					.found("bean", "beans")
-					.items(Style.QUOTE, matchResult.getNamesOfAllMatches());
+					.found("bean", "beans").items(Style.LIST,
+							matchResult.getNamesOfAllMatches().stream().map((item) -> {
+								return item + " (declared in " + context.getBeanFactory()
+										.getBeanDefinition(item).getResourceDescription()
+										+ ")";
+							}).collect(Collectors.toList()));
 		}
 		if (metadata.isAnnotated(ConditionalOnSingleCandidate.class.getName())) {
 			BeanSearchSpec spec = new SingleCandidateBeanSearchSpec(context, metadata,
@@ -102,12 +107,12 @@ class OnBeanCondition extends SpringBootCondition implements ConfigurationCondit
 				return ConditionOutcome.noMatch(ConditionMessage
 						.forCondition(ConditionalOnSingleCandidate.class, spec)
 						.didNotFind("a primary bean from beans")
-						.items(Style.QUOTE, matchResult.getNamesOfAllMatches()));
+						.items(Style.LIST, matchResult.getNamesOfAllMatches()));
 			}
 			matchMessage = matchMessage
 					.andCondition(ConditionalOnSingleCandidate.class, spec)
 					.found("a primary bean from beans")
-					.items(Style.QUOTE, matchResult.namesOfAllMatches);
+					.items(Style.LIST, matchResult.namesOfAllMatches);
 		}
 		if (metadata.isAnnotated(ConditionalOnMissingBean.class.getName())) {
 			BeanSearchSpec spec = new BeanSearchSpec(context, metadata,

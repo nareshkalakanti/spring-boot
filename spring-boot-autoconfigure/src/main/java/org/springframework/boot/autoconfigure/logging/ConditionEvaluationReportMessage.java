@@ -153,10 +153,7 @@ public class ConditionEvaluationReportMessage {
 			message.append(conditionAndOutcome.getOutcome().isMatch() ? "matched"
 					: "did not match");
 		}
-		message.append(" (");
-		message.append(
-				ClassUtils.getShortName(conditionAndOutcome.getCondition().getClass()));
-		message.append(String.format(")%n"));
+		message.append("\n");
 	}
 
 	@Override
