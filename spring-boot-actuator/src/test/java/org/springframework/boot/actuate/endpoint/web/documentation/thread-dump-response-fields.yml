@@ -1,0 +1,70 @@
+"threads":
+  description: "JVM's threads"
+"threads.[].threadName":
+  description: "Name of the thread"
+"threads.[].threadId":
+  description: "ID of the thread"
+"threads.[].blockedTime":
+  description: "Time in milliseconds that the thread has spent blocked. -1 if thread contention monitoring is disabled"
+"threads.[].blockedCount":
+  description: "Total number of times that the thread has been blocked"
+"threads.[].waitedTime":
+  description: "Time in milliseconds that the thread has spent waiting. -1 if thread contention monitoring is disabled"
+"threads.[].waitedCount":
+  description: "Total number of times that the thread has waited for notification"
+"threads.[].lockName":
+  description: "Description of the object on which the thread is blocked if any"
+  optional: true
+"threads.[].lockOwnerId":
+  description: "ID of the thread that owns the object on which the thread is blocked. `-1` if the thread is not blocked"
+"threads.[].lockOwnerName":
+  description: "Name of the thread that owns the object on which the thread is blocked"
+  optional: true
+"threads.[].inNative":
+  description: "Whether or not the thread is executing native code"
+"threads.[].suspended":
+  description: "Whether or not the thread is suspended"
+"threads.[].threadState":
+  description: "State of the thread (`NEW`, `RUNNABLE`, `BLOCKED`, `WAITING`, `TIMED_WAITING`, `TERMINATED`)"
+"threads.[].stackTrace":
+  description: "Stack trace of the thread"
+"threads.[].stackTrace.[].methodName":
+  description: "Name of the method"
+"threads.[].stackTrace.[].fileName":
+  description: "Name of the source file that contains the execution point identified by this entry"
+"threads.[].stackTrace.[].lineNumber":
+  description: "Line number of the execution point identified by this entry. Negative if unknown"
+"threads.[].stackTrace.[].className":
+  description: "Name of the class that contains the execution point identified by this entry"
+"threads.[].stackTrace.[].nativeMethod":
+  description: "Whether or not the execution point is a native method"
+"threads.[].lockedMonitors":
+  description: "Monitors locked by this thread"
+"threads.[].lockedMonitors.[].className":
+  description: "Class name of the lock object"
+"threads.[].lockedMonitors.[].identityHashCode":
+  description: "Identity hash code of the lock object"
+"threads.[].lockedMonitors.[].lockedStackDepth":
+  description: "Stack depth where the monitor was locked"
+"threads.[].lockedMonitors.[].lockedStackFrame":
+  subsection: true
+  description: "Stack frame that locked the monitor"
+"threads.[].lockedSynchronizers":
+  description: "Synchronizers locked by this thread"
+"threads.[].lockedSynchronizers.[].className":
+  description: "Class name of the locked synchronizer"
+  type: "string"
+  optional: true
+"threads.[].lockedSynchronizers.[].identifyHashCode":
+  description: "Identity hash code of the locked synchronizer"
+  type: "number"
+  optional: true
+"threads.[].lockInfo":
+  description: "Object for which the thread is blocked waiting"
+  optional: true
+"threads.[].lockInfo.className":
+  description: "Fully qualified class name of the lock object"
+  optional: true
+"threads.[].lockInfo.identityHashCode":
+  description: "Identity hash code of the lock object"
+  optional: true
