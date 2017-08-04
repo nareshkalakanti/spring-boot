@@ -29,7 +29,8 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 public class SampleWebFluxApplication {
 
 	public static void main(String[] args) throws Exception {
-		SpringApplication.run(SampleWebFluxApplication.class);
+		SpringApplication.run(SampleWebFluxApplication.class,
+				"--logging.level.root=debug");
 	}
 
 	@Bean

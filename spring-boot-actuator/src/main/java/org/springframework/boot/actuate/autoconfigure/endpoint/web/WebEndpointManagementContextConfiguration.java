@@ -20,10 +20,12 @@ import org.springframework.boot.actuate.autoconfigure.ManagementContextConfigura
 import org.springframework.boot.actuate.autoconfigure.endpoint.ConditionalOnEnabledEndpoint;
 import org.springframework.boot.actuate.endpoint.AuditEventsEndpoint;
 import org.springframework.boot.actuate.endpoint.HealthEndpoint;
+import org.springframework.boot.actuate.endpoint.ThreadDumpEndpoint;
 import org.springframework.boot.actuate.endpoint.web.AuditEventsWebEndpointExtension;
 import org.springframework.boot.actuate.endpoint.web.HealthWebEndpointExtension;
 import org.springframework.boot.actuate.endpoint.web.HeapDumpWebEndpoint;
 import org.springframework.boot.actuate.endpoint.web.LogFileWebEndpoint;
+import org.springframework.boot.actuate.endpoint.web.ThreadDumpWebEndpointExtension;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -83,6 +85,15 @@ public class WebEndpointManagementContextConfiguration {
 	@Conditional(LogFileCondition.class)
 	public LogFileWebEndpoint logfileWebEndpoint(Environment environment) {
 		return new LogFileWebEndpoint(environment);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	@ConditionalOnEnabledEndpoint
+	@ConditionalOnBean(value = ThreadDumpEndpoint.class, search = SearchStrategy.CURRENT)
+	public ThreadDumpWebEndpointExtension threadDumpWebEndpointExtension(
+			ThreadDumpEndpoint delegate) {
+		return new ThreadDumpWebEndpointExtension(delegate);
 	}
 
 	private static class LogFileCondition extends SpringBootCondition {
